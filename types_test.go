@@ -6,6 +6,62 @@ import (
 	"testing"
 )
 
+func TestStructToTable_1(t *testing.T) {
+	i := 1
+	n, cs := structToTable(i)
+	assert(t, n == "")
+	assert(t, len(cs) == 0)
+}
+func TestStructToTable_2(t *testing.T) {
+	a := struct {
+		Name string
+	}{}
+	testStructToTable(t, a, "", 1)
+}
+func TestStructToTable_3(t *testing.T) {
+	type A struct {
+		Id   int64
+		Name string
+	}
+	testStructToTable(t, A{}, "a", 2)
+}
+func TestStructToTable_4(t *testing.T) {
+	type A struct {
+		Id   int64
+		Name string
+	}
+	type B struct {
+		A
+	}
+	type C struct {
+		A `yorm:"-"`
+		B `yorm:"column(test)"`
+	}
+	type D struct {
+		B
+		Log string `yorm:"column(log2)"`
+	}
+	testStructToTable(t, B{}, "b", 2)
+	testStructToTable(t, C{}, "c", 1)
+	testStructToTable(t, D{}, "d", 3)
+	_, cs := structToTable(D{})
+	for _, v := range cs {
+		t.Log(v.name)
+		for _, v1 := range []string{"id", "name", "log2"} {
+			if v.name == v1 {
+				goto S
+			}
+		}
+		t.Fail()
+	S:
+	}
+}
+
+func testStructToTable(t *testing.T, i interface{}, name string, numField int) {
+	n, cs := structToTable(i)
+	assert(t, n == name)
+	assert(t, len(cs) == numField)
+}
 func TestStructColumns_2(t *testing.T) {
 	type A struct {
 		UserName string

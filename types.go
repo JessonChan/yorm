@@ -17,6 +17,14 @@ type column struct {
 
 var structColumnCache map[reflect.Type][]column
 
+func structToTable(i interface{}) (tableName string, columns []column) {
+	typ := reflect.TypeOf(i)
+	if typ.Kind() != reflect.Struct {
+		return
+	}
+	return camel2underscore(typ.Name()), structColumns(typ)
+}
+
 func structColumns(t reflect.Type) (columns []column) {
 	if t.Kind() != reflect.Struct {
 		return
