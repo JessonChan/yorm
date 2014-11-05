@@ -2,6 +2,12 @@ package yorm
 
 import "reflect"
 
+//field name
+const (
+	CAMEL2UNDERSCORE = iota
+	FILEDNAME
+)
+
 // A column  represents a single column on a db record
 type column struct {
 	name   string
@@ -44,7 +50,7 @@ func structColumns(t reflect.Type) (columns []column) {
 				follow = true
 			}
 		}
-		c := column{name: name, typ: ft, follow: follow}
+		c := column{name: camel2underscore(name), typ: ft, follow: follow}
 		if c.follow {
 			columns = append(columns, structColumns(c.typ)...)
 		} else {
