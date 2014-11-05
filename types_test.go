@@ -6,32 +6,59 @@ import (
 	"testing"
 )
 
-func dumpColumns(cs []column, t *testing.T) {
-	for k, v := range cs {
-		t.Log(fmt.Sprintf("%d,%s,%v", k, v.name, v.typ))
-	}
-}
 func TestStructColumns_2(t *testing.T) {
 	type A struct {
 		UserName string
 		Uid      string
 		name     string
 	}
-	cs := structColumns(reflect.TypeOf(A{}))
-	if len(cs) != 2 {
-		t.Error("structColumns A struct ")
-		t.Fail()
-	}
-	dumpColumns(structColumns(reflect.TypeOf(A{})), t)
+	testStructColumns(A{}, 2, t)
 }
 func TestStructColumns_1(t *testing.T) {
-	cs := structColumns(
-		reflect.TypeOf(struct {
-			Id   int
-			Name string
-		}{}))
-	if len(cs) != 2 {
+	testStructColumns(struct {
+		Id   int
+		Name string
+	}{}, 2, t)
+}
+
+func TestStructColumns_3(t *testing.T) {
+	testStructColumns(struct{ Name *string }{}, 1, t)
+}
+func TestStructColumns_4(t *testing.T) {
+	type A struct {
+		Id int
+	}
+	type B struct {
+		A
+	}
+	testStructColumns(B{}, 1, t)
+}
+
+func TestStructColumns_5(t *testing.T) {
+	type A struct {
+		Id int
+	}
+	type B struct {
+		A `yorm:"-"`
+	}
+	testStructColumns(B{}, 0, t)
+}
+
+func TestStructColumns_6(t *testing.T) {
+	type A struct {
+		Id int
+	}
+	type B struct {
+		A `yorm:"column(user_name)"`
+	}
+	testStructColumns(B{}, 1, t)
+}
+func testStructColumns(itf interface{}, numField int, t *testing.T) {
+	cs := structColumns(reflect.TypeOf(itf))
+	for k, v := range cs {
+		t.Log(fmt.Sprintf("%d,%s,%v", k, v.name, v.typ))
+	}
+	if len(cs) != numField {
 		t.Fail()
 	}
-	dumpColumns(cs, t)
 }

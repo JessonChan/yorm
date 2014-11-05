@@ -31,7 +31,7 @@ func parseTag(tagStr string) (t columnTag) {
 	defer func() {
 		if t.skip {
 			//ignore other filed value
-			return columnTag{skip: true}
+			t = columnTag{skip: true}
 		}
 	}()
 	if tagStr == "" {
