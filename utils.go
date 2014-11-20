@@ -1,12 +1,10 @@
 package yorm
 
-import "strings"
-
 func camel2underscore(name string) string {
 	if name == "" {
 		return name
 	}
-	var bs []rune
+	bs := make([]rune, 0, 2*len(name))
 	for _, s := range name {
 		if 'A' <= s && s <= 'Z' {
 			s += 32
@@ -20,21 +18,20 @@ func camel2underscore(name string) string {
 	return string(bs)
 }
 func underscore2camel(name string) string {
-	lengh := len(name)
-	if lengh <= 2 {
-		return name
-	}
-	ss := strings.Split(name, "_")
-	ns := ""
-	for _, s := range ss {
-		if s != "" {
-			rs := make([]rune, len([]rune(s)))
-			copy(rs, []rune(s))
-			if s[0] > 'a' && s[0] < 'z' {
-				rs[0] -= 32
+	ns := make([]rune, 0, len(name))
+	isUnder := true
+	for _, v := range name {
+		r := v
+		if isUnder {
+			if v >= 'a' && v <= 'z' {
+				r -= 32
 			}
-			ns += string(rs)
 		}
+		isUnder = v == '_'
+		if isUnder {
+			continue
+		}
+		ns = append(ns, r)
 	}
-	return ns
+	return string(ns)
 }

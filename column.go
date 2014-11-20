@@ -22,9 +22,6 @@ type column struct {
 
 var structColumnCache map[reflect.Type][]column
 
-func StructToTable(i interface{}) table {
-}
-
 func structToTable(i interface{}) (tableName string, columns []column) {
 	typ := reflect.TypeOf(i)
 	if typ.Kind() != reflect.Struct {

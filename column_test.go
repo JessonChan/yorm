@@ -12,6 +12,7 @@ func TestStructToTable_1(t *testing.T) {
 	assert(t, n == "")
 	assert(t, len(cs) == 0)
 }
+
 func TestStructToTable_2(t *testing.T) {
 	a := struct {
 		Name string
