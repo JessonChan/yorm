@@ -52,7 +52,7 @@ func structColumns(t reflect.Type) (columns []column) {
 		if ft.Name() == "" && ft.Kind() == reflect.Ptr {
 			ft = ft.Elem()
 		}
-		name := tf.Name
+		name := camel2underscore(tf.Name)
 		var follow bool
 		if tag.columnIsSet {
 			if tag.columnName != "" {
@@ -63,7 +63,7 @@ func structColumns(t reflect.Type) (columns []column) {
 				follow = true
 			}
 		}
-		c := column{name: camel2underscore(name), typ: ft, follow: follow}
+		c := column{name: name, typ: ft, follow: follow}
 		if c.follow {
 			columns = append(columns, structColumns(c.typ)...)
 		} else {
