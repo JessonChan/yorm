@@ -7,7 +7,7 @@ func camel2underscore(name string) string {
 	bs := make([]rune, 0, 2*len(name))
 	for _, s := range name {
 		if 'A' <= s && s <= 'Z' {
-			s += 32
+			s += ('a' - 'A')
 			bs = append(bs, '_')
 		}
 		bs = append(bs, s)
@@ -24,7 +24,7 @@ func underscore2camel(name string) string {
 		r := v
 		if isUnder {
 			if v >= 'a' && v <= 'z' {
-				r -= 32
+				r -= ('a' - 'A')
 			}
 		}
 		isUnder = v == '_'
