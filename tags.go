@@ -18,7 +18,7 @@ func parseBracketsValue(toParse, key string) (value string, isSet bool) {
 	}
 	keyLen := len(key)
 	lengh := len(toParse)
-	if keyLen+2 > lengh {
+	if keyLen+2 > lengh { // 2 == len("(") + len(")")
 		return
 	}
 	if toParse[keyLen:keyLen+1] == "(" && toParse[lengh-1:] == ")" {

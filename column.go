@@ -15,12 +15,12 @@ type table struct {
 
 // A column  represents a single column on a db record
 type column struct {
-	name   string
-	typ    reflect.Type
-	follow bool
+	name    string
+	typ     reflect.Type
+	isInner bool //inner struct ?
 }
 
-var structColumnCache map[reflect.Type][]column
+var structColumnCache = make(map[reflect.Type][]column)
 
 func structToTable(i interface{}) (tableName string, columns []column) {
 	typ := reflect.TypeOf(i)
@@ -38,42 +38,42 @@ func structColumns(t reflect.Type) (columns []column) {
 		return cs
 	}
 	for i := 0; i < t.NumField(); i++ {
-		tf := t.Field(i)
+		field := t.Field(i)
 		//unexpected struct type,ommit
-		if tf.PkgPath != "" {
+		if field.PkgPath != "" {
 			continue
 		}
-		ft := tf.Type
-		tag := parseTag(tf.Tag.Get("yorm"))
+
+		fieldType := field.Type
+		tag := parseTag(field.Tag.Get("yorm"))
 		if tag.skip {
 			continue
 		}
 		//todo if ft is ptr'ptr or three deep ptr?
-		if ft.Name() == "" && ft.Kind() == reflect.Ptr {
-			ft = ft.Elem()
+		if fieldType.Name() == "" && fieldType.Kind() == reflect.Ptr {
+			fieldType = fieldType.Elem()
 		}
-		name := camel2underscore(tf.Name)
-		var follow bool
+		name := camel2underscore(field.Name)
+		var isInner bool
 		if tag.columnIsSet {
 			if tag.columnName != "" {
 				name = tag.columnName
 			}
 		} else {
-			if ft.Kind() == reflect.Struct {
-				follow = true
+			if fieldType.Kind() == reflect.Struct {
+				isInner = true
 			}
 		}
-		c := column{name: name, typ: ft, follow: follow}
-		if c.follow {
+		c := column{name: name, typ: fieldType, isInner: isInner}
+		if c.isInner {
+
+			// recursive unwind  inner struct
 			columns = append(columns, structColumns(c.typ)...)
 		} else {
 			columns = append(columns, c)
 		}
 	}
 	if len(columns) > 0 {
-		if structColumnCache == nil {
-			structColumnCache = make(map[reflect.Type][]column)
-		}
 		structColumnCache[t] = columns
 	}
 	return

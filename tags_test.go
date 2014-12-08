@@ -46,7 +46,14 @@ func TestParseTag_4(t *testing.T) {
 	assertTrue(tag.skip, t)
 	assertTrue(tag.columnName == "", t)
 }
+
 func TestParseTag_5(t *testing.T) {
+	tag := parseTag("column(tag);-")
+	assertTrue(tag.skip, t)
+	assertTrue(tag.columnName == "", t)
+}
+
+func TestParseTag_6(t *testing.T) {
 	tag := parseTag("column(tag1);default(1)")
 	assertTrue(!tag.skip, t)
 	assertTrue(tag.columnName == "tag1", t)
