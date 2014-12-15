@@ -1,11 +1,16 @@
 package yorm
 
-import "reflect"
+import (
+	"database/sql"
+	"reflect"
+)
 
 type Query struct {
-	query string
-	dests []interface{}
-	where string
+	query   string
+	dests   []interface{}
+	where   string
+	table   string
+	columns []column
 }
 type Where string
 
@@ -28,6 +33,8 @@ func newQuery(i interface{}) *Query {
 	}
 	q := new(Query)
 	table, cs := structToTable(reflect.Indirect(ri).Interface())
+	q.table = table
+	q.columns = cs
 	q.query = query(table, cs)
 	q.dests = make([]interface{}, len(cs))
 	for k, v := range cs {
@@ -36,6 +43,24 @@ func newQuery(i interface{}) *Query {
 		}
 	}
 	return q
+}
+
+func convertAssign(i interface{}, rows *sql.Rows, q *Query) error {
+	berforeAssign(rows, q)
+	st := reflect.ValueOf(i).Elem()
+	for idx, c := range q.columns {
+		st.Field(c.fieldNum).SetInt(int64(*(q.dests[idx].(*int))))
+	}
+	return nil
+}
+func berforeAssign(rows *sql.Rows, q *Query) error {
+	for rows.Next() {
+		err := rows.Scan(q.dests...)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func query(table string, cs []column) string {

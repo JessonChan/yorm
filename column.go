@@ -15,9 +15,10 @@ type table struct {
 
 // A column  represents a single column on a db record
 type column struct {
-	name    string
-	typ     reflect.Type
-	isInner bool //inner struct ?
+	fieldNum int
+	name     string
+	typ      reflect.Type
+	isInner  bool //inner struct ?
 }
 
 var structColumnCache = make(map[reflect.Type][]column)
@@ -64,7 +65,7 @@ func structColumns(t reflect.Type) (columns []column) {
 				isInner = true
 			}
 		}
-		c := column{name: name, typ: fieldType, isInner: isInner}
+		c := column{fieldNum: i, name: name, typ: fieldType, isInner: isInner}
 		if c.isInner {
 
 			// recursive unwind  inner struct

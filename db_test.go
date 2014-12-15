@@ -34,13 +34,10 @@ func TestQuery_2(t *testing.T) {
 		t.Fail()
 	}
 	defer rows.Close()
-	for rows.Next() {
-		err := rows.Scan(q.dests...)
-		if err != nil {
-			return
-		}
-	}
-	mapping.Id1 = *(q.dests[1].(*int))
-	mapping.Id2 = *(q.dests[2].(*int))
+	//	berforeAssign(rows, q)
+	convertAssign(&mapping, rows, q)
 	t.Log(mapping)
+	//  mapping.Id1 = *(q.dests[1].(*int))
+	//  mapping.Id2 = *(q.dests[2].(*int))
+	//  t.Log(mapping)
 }
