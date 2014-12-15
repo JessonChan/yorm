@@ -45,8 +45,12 @@ func newQuery(i interface{}) *Query {
 	return q
 }
 
+// 对返回值进行赋值
 func convertAssign(i interface{}, rows *sql.Rows, q *Query) error {
-	berforeAssign(rows, q)
+	err := berforeAssign(rows, q)
+	if err != nil {
+		return err
+	}
 	st := reflect.ValueOf(i).Elem()
 	for idx, c := range q.columns {
 		// different assign func here
