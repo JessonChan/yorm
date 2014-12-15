@@ -22,8 +22,12 @@ func (q *Query) Where(w string) *Query {
 }
 
 func newQuery(i interface{}) *Query {
+	ri := reflect.ValueOf(i)
+	if ri.Kind() != reflect.Ptr || ri.IsNil() {
+		return nil
+	}
 	q := new(Query)
-	table, cs := structToTable(i)
+	table, cs := structToTable(reflect.Indirect(ri).Interface())
 	q.query = query(table, cs)
 	q.dests = make([]interface{}, len(cs))
 	for k, v := range cs {

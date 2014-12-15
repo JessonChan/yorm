@@ -7,25 +7,25 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-type MtMovieMapping struct {
-	Id       int
-	MtimeId  int `yorm:"column(mtimeId)"`
-	DoubanId int `yorm:"column(DoubanId)"`
+type Movie struct {
+	Id  int
+	Id1 int `yorm:"column(mid)"`
+	Id2 int `yorm:"column(did)"`
 }
 
-func TestQurey_1(t *testing.T) {
-	s := query(structToTable(MtMovieMapping{}))
+func TestQuery_1(t *testing.T) {
+	s := query(structToTable(Movie{}))
 	t.Log(s)
 }
-func TestQurey_2(t *testing.T) {
-	dbpath := "q3boy:123@tcp(192.168.2.218:3306)/movie_crawler?charset=utf8"
+func TestQuery_2(t *testing.T) {
+	dbpath := "root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8"
 	db, err := sql.Open("mysql", dbpath)
 	if err != nil {
 		t.Log(err)
 		t.Fail()
 	}
-	mapping := MtMovieMapping{Id: 1}
-	q := newQuery(MtMovieMapping{})
+	mapping := Movie{Id: 1}
+	q := newQuery(&Movie{})
 	t.Log(q)
 	q.Where("id = 1")
 	rows, err := db.Query(q.String())
@@ -40,7 +40,7 @@ func TestQurey_2(t *testing.T) {
 			return
 		}
 	}
-	mapping.MtimeId = *(q.dests[1].(*int))
-	mapping.DoubanId = *(q.dests[2].(*int))
+	mapping.Id1 = *(q.dests[1].(*int))
+	mapping.Id2 = *(q.dests[2].(*int))
 	t.Log(mapping)
 }
