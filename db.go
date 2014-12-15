@@ -49,6 +49,7 @@ func convertAssign(i interface{}, rows *sql.Rows, q *Query) error {
 	berforeAssign(rows, q)
 	st := reflect.ValueOf(i).Elem()
 	for idx, c := range q.columns {
+		// different assign func here
 		st.Field(c.fieldNum).SetInt(int64(*(q.dests[idx].(*int))))
 	}
 	return nil
