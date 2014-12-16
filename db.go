@@ -6,7 +6,8 @@ import (
 )
 
 type Query struct {
-	query   string
+	query string
+	// todo when return array[] not a single value
 	dests   []interface{}
 	where   string
 	table   string
