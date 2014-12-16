@@ -21,12 +21,6 @@ func Register(dbconfig ...string) {
 	case 1:
 		k = "default"
 		v = dbconfig[0]
-		if _, ok := dbMap["default"]; ok {
-			panic("dump default dbconfig")
-			return
-		} else {
-			dbMap["default"] = dbconfig[0]
-		}
 	default:
 		k = dbconfig[0]
 		v = dbconfig[1]
