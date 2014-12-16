@@ -5,6 +5,39 @@ import (
 	"reflect"
 )
 
+var dbMap map[string]string = make(map[string]string, 1)
+
+var currentDb string = "default"
+
+func Using(dbname string) {
+	currentDb = dbname
+}
+
+func Register(dbconfig ...string) {
+	var k, v string
+	switch len(dbconfig) {
+	case 0:
+		return
+	case 1:
+		k = "default"
+		v = dbconfig[0]
+		if _, ok := dbMap["default"]; ok {
+			panic("dump default dbconfig")
+			return
+		} else {
+			dbMap["default"] = dbconfig[0]
+		}
+	default:
+		k = dbconfig[0]
+		v = dbconfig[1]
+	}
+	if d, ok := dbMap[k]; ok {
+		panic("dump dbconfig of " + d)
+	} else {
+		dbMap[k] = v
+	}
+}
+
 type Query struct {
 	query string
 	// todo when return array[] not a single value
