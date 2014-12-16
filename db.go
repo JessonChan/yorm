@@ -39,9 +39,14 @@ func newQuery(i interface{}) *Query {
 	q.query = query(table, cs)
 	q.dests = make([]interface{}, len(cs))
 	for k, v := range cs {
-		if v.typ.Kind() == reflect.Int {
-			q.dests[k] = new(int)
+		var ti interface{}
+		switch v.typ.Kind() {
+		case reflect.Int:
+			ti = new(int)
+		case reflect.Int64:
+			ti = new(int64)
 		}
+		q.dests[k] = ti
 	}
 	return q
 }
