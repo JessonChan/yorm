@@ -9,8 +9,8 @@ import (
 
 type Movie struct {
 	Id  int
-	Id1 int `yorm:"column(mid)"`
-	Id2 int `yorm:"column(did)"`
+	Id1 int   `yorm:"column(mid)"`
+	Id2 int64 `yorm:"column(did)"`
 }
 
 func TestQuery_1(t *testing.T) {

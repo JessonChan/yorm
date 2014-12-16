@@ -54,7 +54,12 @@ func convertAssign(i interface{}, rows *sql.Rows, q *Query) error {
 	st := reflect.ValueOf(i).Elem()
 	for idx, c := range q.columns {
 		// different assign func here
-		st.Field(c.fieldNum).SetInt(int64(*(q.dests[idx].(*int))))
+		switch c.typ.Kind() {
+		case reflect.Int:
+			st.Field(c.fieldNum).SetInt(int64(*(q.dests[idx].(*int))))
+		case reflect.Int64:
+			st.Field(c.fieldNum).SetInt(int64(*(q.dests[idx].(*int64))))
+		}
 	}
 	return nil
 }
