@@ -1,12 +1,8 @@
 package yorm
 
-import (
-	"database/sql"
-	"testing"
+import _ "github.com/go-sql-driver/mysql"
 
-	_ "github.com/go-sql-driver/mysql"
-)
-
+/*
 type Movie struct {
 	Id  int
 	Id1 int `yorm:"column(mid)"`
@@ -41,3 +37,4 @@ func TestQuery_2(t *testing.T) {
 	//  mapping.Id2 = *(q.dests[2].(*int))
 	//  t.Log(mapping)
 }
+*/
