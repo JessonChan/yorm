@@ -16,21 +16,17 @@ type sqlScanner interface {
 	Scan(dest ...interface{}) error
 }
 
-
 func Query(i interface{}, query string, args ...interface{}) error {
 	typ := reflect.TypeOf(i)
 	if typ.Kind() != reflect.Ptr {
 		return errors.New("return value must be ptr to modify")
 	}
 	typ = typ.Elem()
-	stmt := stmtMap[query]
 	var err error
+	var stmt *sql.Stmt
+	stmt, err = getStmt(query)
 	if stmt == nil {
-		stmt, err = sqlDb.Prepare(query)
-		if stmt == nil {
-			return err
-		}
-		stmtMap[query] = stmt
+		return err
 	}
 	if typ.Kind() == reflect.Slice {
 		rows, err := stmt.Query(args...)
