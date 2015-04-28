@@ -27,7 +27,7 @@ func Insert(i interface{}, args ...interface{}) (int64, error) {
 			continue
 		}
 		fs += fmt.Sprintf(",%v", c.name)
-		vs += fmt.Sprintf(",%v", v.Interface())
+		vs += fmt.Sprintf(",'%v'", v.Interface())
 	}
 	if fs == "" || vs == "" {
 		return 0, errors.New("no filed to insert")
