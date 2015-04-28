@@ -20,6 +20,10 @@ const (
 	MYSQL = "mysql"
 )
 
+type sqlScanner interface {
+	Scan(dest ...interface{}) error
+}
+
 func Register(dbPath string) error {
 	var err error
 	sqlDb, err = sql.Open(MYSQL, dbPath)
@@ -27,19 +31,6 @@ func Register(dbPath string) error {
 		return err
 	}
 	return sqlDb.Ping()
-}
-
-func QueryOne(i interface{}, row *sql.Row) error {
-	if row == nil {
-		return errors.New("nil row")
-	}
-	return convertAssignRow(i, row)
-}
-func QueryList(i interface{}, rows *sql.Rows) error {
-	if rows == nil {
-		return errors.New("rows nil")
-	}
-	return convertAssignRows(i, rows)
 }
 
 func Query(i interface{}, query string, args ...interface{}) error {
@@ -62,15 +53,24 @@ func Query(i interface{}, query string, args ...interface{}) error {
 		if rows == nil {
 			return err
 		}
-		return QueryList(i, rows)
+		return queryList(i, rows)
 	} else {
-		return QueryOne(i, stmt.QueryRow(args...))
+		return queryOne(i, stmt.QueryRow(args...))
 	}
 	return nil
 }
 
-type sqlScanner interface {
-	Scan(dest ...interface{}) error
+func queryOne(i interface{}, row *sql.Row) error {
+	if row == nil {
+		return errors.New("nil row")
+	}
+	return convertAssignRow(i, row)
+}
+func queryList(i interface{}, rows *sql.Rows) error {
+	if rows == nil {
+		return errors.New("rows nil")
+	}
+	return convertAssignRows(i, rows)
 }
 
 func newQuery(ri reflect.Value) *querySetter {
