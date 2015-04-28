@@ -12,6 +12,23 @@ type querySetter struct {
 	columns []column
 }
 
+var sqlDb *sql.DB
+var tableMap map[reflect.Kind]*querySetter = make(map[reflect.Kind]*querySetter)
+var stmtMap map[string]*sql.Stmt = make(map[string]*sql.Stmt)
+
+const (
+	MYSQL = "mysql"
+)
+
+func Register(dbPath string) error {
+	var err error
+	sqlDb, err = sql.Open(MYSQL, dbPath)
+	if sqlDb == nil {
+		return err
+	}
+	return sqlDb.Ping()
+}
+
 func QueryOne(i interface{}, row *sql.Row) error {
 	if row == nil {
 		return errors.New("nil row")
@@ -25,11 +42,36 @@ func QueryList(i interface{}, rows *sql.Rows) error {
 	return convertAssignRows(i, rows)
 }
 
+func Query(i interface{}, query string, args ...interface{}) error {
+	typ := reflect.TypeOf(i)
+	if typ.Kind() != reflect.Ptr {
+		return errors.New("return value must be ptr to modify")
+	}
+	typ = typ.Elem()
+	stmt := stmtMap[query]
+	var err error
+	if stmt == nil {
+		stmt, err = sqlDb.Prepare(query)
+		if stmt == nil {
+			return err
+		}
+		stmtMap[query] = stmt
+	}
+	if typ.Kind() == reflect.Slice {
+		rows, err := stmt.Query(args...)
+		if rows == nil {
+			return err
+		}
+		return QueryList(i, rows)
+	} else {
+		return QueryOne(i, stmt.QueryRow(args...))
+	}
+	return nil
+}
+
 type sqlScanner interface {
 	Scan(dest ...interface{}) error
 }
-
-var tableMap map[reflect.Kind]*querySetter = make(map[reflect.Kind]*querySetter)
 
 func newQuery(ri reflect.Value) *querySetter {
 	if q, ok := tableMap[ri.Kind()]; ok {
@@ -107,7 +149,10 @@ func convertAssignRows(i interface{}, rows *sql.Rows) error {
 		st := reflect.New(typ)
 		st = st.Elem()
 		if q != nil {
-			scanValue(rows, q, st)
+			err := scanValue(rows, q, st)
+			if err != nil {
+				return err
+			}
 		} else {
 			rows.Scan(ti)
 			st.Set(reflect.ValueOf(ti).Elem())
