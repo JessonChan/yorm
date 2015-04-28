@@ -23,8 +23,12 @@ func Register(dbPath string) error {
 }
 
 func getStmt(clause string) (*sql.Stmt, error) {
-	stmt := stmtMap[clause]
 	var err error
+	clause, err = validClause(clause)
+	if err != nil {
+		return err
+	}
+	stmt := stmtMap[clause]
 	if stmt == nil {
 		stmt, err = sqlDb.Prepare(clause)
 		if stmt != nil {
@@ -32,4 +36,8 @@ func getStmt(clause string) (*sql.Stmt, error) {
 		}
 	}
 	return stmt, err
+}
+
+func validClause(clause string) (string, error) {
+	return clause, nil
 }
