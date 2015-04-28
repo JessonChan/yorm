@@ -5,17 +5,31 @@ import (
 	"reflect"
 )
 
-var sqlDb *sql.DB
-var tableMap map[reflect.Kind]*querySetter = make(map[reflect.Kind]*querySetter)
-var stmtMap map[string]*sql.Stmt = make(map[string]*sql.Stmt)
+//DriverName standard for database's driver name such as: mysql, oracle, db2 and so on.
+type DriverName string
 
 const (
-	MYSQL = "mysql"
+	DriverMySQL DriverName = "mysql"
+
+	//DriverDefault is  the default driver(mysql)
+	DriverDefault = DriverMySQL
 )
 
-func Register(dbPath string) error {
+var sqlDb *sql.DB
+var tableMap = map[reflect.Kind]*querySetter{}
+var stmtMap = map[string]*sql.Stmt{}
+
+// Register register a database driver.
+func Register(dsn string, driver ...DriverName) error {
 	var err error
-	sqlDb, err = sql.Open(MYSQL, dbPath)
+
+	if len(driver) != 0 {
+		sqlDb, err = sql.Open(string(driver[0]), dsn)
+
+	} else {
+		sqlDb, err = sql.Open(string(DriverDefault), dsn)
+	}
+
 	if sqlDb == nil {
 		return err
 	}
@@ -26,7 +40,7 @@ func getStmt(clause string) (*sql.Stmt, error) {
 	var err error
 	clause, err = validClause(clause)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	stmt := stmtMap[clause]
 	if stmt == nil {

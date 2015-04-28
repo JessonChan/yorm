@@ -1,6 +1,6 @@
 package yorm
 
-func camel2underscore(name string) string {
+func camelToUnderscore(name string) string {
 	if name == "" {
 		return name
 	}
@@ -17,7 +17,8 @@ func camel2underscore(name string) string {
 	}
 	return string(bs)
 }
-func underscore2camel(name string) string {
+
+func underscoreToCamel(name string) string {
 	ns := make([]rune, 0, len(name))
 	isUnder := true
 	for _, v := range name {

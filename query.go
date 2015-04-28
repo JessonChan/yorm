@@ -16,10 +16,11 @@ type sqlScanner interface {
 	Scan(dest ...interface{}) error
 }
 
+//Query do a query operation.
 func Query(i interface{}, query string, args ...interface{}) error {
 	typ := reflect.TypeOf(i)
 	if typ.Kind() != reflect.Ptr {
-		return errors.New("return value must be ptr to modify")
+		return ErrNonPtr
 	}
 	typ = typ.Elem()
 	var err error
@@ -34,21 +35,20 @@ func Query(i interface{}, query string, args ...interface{}) error {
 			return err
 		}
 		return queryList(i, rows)
-	} else {
-		return queryOne(i, stmt.QueryRow(args...))
 	}
-	return nil
+	return queryOne(i, stmt.QueryRow(args...))
+
 }
 
 func queryOne(i interface{}, row *sql.Row) error {
 	if row == nil {
-		return errors.New("nil row")
+		return ErrIllegalParams
 	}
 	return convertAssignRow(i, row)
 }
 func queryList(i interface{}, rows *sql.Rows) error {
 	if rows == nil {
-		return errors.New("rows nil")
+		return ErrIllegalParams
 	}
 	return convertAssignRows(i, rows)
 }
@@ -90,11 +90,11 @@ func newPtrInterface(k reflect.Kind) interface{} {
 func convertAssignRows(i interface{}, rows *sql.Rows) error {
 	typ := reflect.TypeOf(i)
 	if typ.Kind() != reflect.Ptr {
-		return errors.New("not ptr")
+		return ErrNonPtr
 	}
 	typ = typ.Elem()
 	if typ.Kind() != reflect.Slice {
-		return errors.New("need a slice container")
+		return ErrNonSlice
 	}
 	typ = typ.Elem()
 	var q *querySetter
