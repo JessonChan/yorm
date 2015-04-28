@@ -7,11 +7,11 @@ import (
 	"strings"
 )
 
-// return lastInsertId and error if has
+//Insert  return lastInsertId and error if has
 func Insert(i interface{}, args ...string) (int64, error) {
 	q := newQuery(reflect.ValueOf(i))
 	if q == nil {
-		return 0, errors.New("your object not support")
+		return 0, ErrNotSupported
 	}
 	clause := "insert into " + q.table + " set "
 

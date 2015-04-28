@@ -4,14 +4,9 @@ import "reflect"
 
 //field name
 const (
-	CAMEL2UNDERSCORE = iota
-	FILEDNAME
+	CamelToUnderscore = iota
+	FieldName
 )
-
-type table struct {
-	name    string
-	columns []column
-}
 
 // A column  represents a single column on a db record
 type column struct {
@@ -22,14 +17,20 @@ type column struct {
 	isInner   bool //inner struct ?
 }
 
-var structColumnCache = make(map[reflect.Type][]column)
+//table represents a single table.
+type table struct {
+	name    string
+	columns []column
+}
+
+var structColumnCache = map[reflect.Type][]column{}
 
 func structToTable(i interface{}) (tableName string, columns []column) {
 	typ := reflect.TypeOf(i)
 	if typ.Kind() != reflect.Struct {
 		return
 	}
-	return camel2underscore(typ.Name()), structColumns(typ)
+	return camelToUnderscore(typ.Name()), structColumns(typ)
 }
 
 func structColumns(t reflect.Type) (columns []column) {
@@ -55,7 +56,7 @@ func structColumns(t reflect.Type) (columns []column) {
 		if fieldType.Name() == "" && fieldType.Kind() == reflect.Ptr {
 			fieldType = fieldType.Elem()
 		}
-		name := camel2underscore(field.Name)
+		name := camelToUnderscore(field.Name)
 		var isInner bool
 		if tag.columnIsSet {
 			if tag.columnName != "" {
