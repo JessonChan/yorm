@@ -12,9 +12,23 @@ type QuerySetter struct {
 	columns []column
 }
 
+func QueryOne(i interface{}, row *sql.Row) error {
+	if row == nil {
+		return errors.New("nil row")
+	}
+	return convertAssignRow(i, row)
+}
+func QueryList(i interface{}, rows *sql.Rows) error {
+	if rows == nil {
+		return errors.New("rows nil")
+	}
+	return convertAssignRows(i, rows)
+}
+
 type sqlScanner interface {
 	Scan(dest ...interface{}) error
 }
+
 
 var tableMap map[reflect.Kind]*QuerySetter = make(map[reflect.Kind]*QuerySetter)
 
