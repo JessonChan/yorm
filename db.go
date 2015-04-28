@@ -5,31 +5,29 @@ import (
 	"reflect"
 )
 
-//DBType standard for database's type such as: mysql, oralce, db2 and so on.
-type DBType string
+//DriverName standard for database's driver name such as: mysql, oracle, db2 and so on.
+type DriverName string
 
 const (
-	MySQL DBType = "mysql"
+	DriverMySQL DriverName = "mysql"
 
-	//DBDefault the default database(mysql)
-	DBDefault = MySQL
+	//DriverDefault is  the default driver(mysql)
+	DriverDefault = DriverMySQL
 )
 
 var sqlDb *sql.DB
-
 var tableMap = map[reflect.Kind]*querySetter{}
-
 var stmtMap = map[string]*sql.Stmt{}
 
 // Register register a database driver.
-func Register(dsn string, db ...DBType) error {
+func Register(dsn string, driver ...DriverName) error {
 	var err error
 
-	if len(db) != 0 {
-		sqlDb, err = sql.Open(string(db[0]), dsn)
+	if len(driver) != 0 {
+		sqlDb, err = sql.Open(string(driver[0]), dsn)
 
 	} else {
-		sqlDb, err = sql.Open(string(DBDefault), dsn)
+		sqlDb, err = sql.Open(string(DriverDefault), dsn)
 	}
 
 	if sqlDb == nil {
