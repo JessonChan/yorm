@@ -2,91 +2,124 @@ package yorm
 
 import (
 	"database/sql"
+	"errors"
 	"reflect"
 )
 
-var dbMap map[string]string = make(map[string]string, 1)
-
-var currentDb string = "default"
-
-func Using(dbname string) {
-	currentDb = dbname
-}
-
-func Register(dbconfig ...string) {
-	var k, v string
-	switch len(dbconfig) {
-	case 0:
-		return
-	case 1:
-		k = "default"
-		v = dbconfig[0]
-	default:
-		k = dbconfig[0]
-		v = dbconfig[1]
-	}
-	if d, ok := dbMap[k]; ok {
-		panic("dump dbconfig of " + d)
-	} else {
-		dbMap[k] = v
-	}
-}
-
-type Query struct {
-	query string
-	// todo when return array[] not a single value
-	dests   []interface{}
-	where   string
+type QuerySetter struct {
 	table   string
+	dests   []interface{}
 	columns []column
 }
-type Where string
 
-func (q *Query) String() string {
-	if q.where == "" {
-		return q.query
+type sqlScanner interface {
+	Scan(dest ...interface{}) error
+}
+
+var tableMap map[reflect.Kind]*QuerySetter = make(map[reflect.Kind]*QuerySetter)
+
+func newQuery(ri reflect.Value) *QuerySetter {
+	if q, ok := tableMap[ri.Kind()]; ok {
+		return q
 	}
-	return q.query + " where " + q.where
-}
-
-func (q *Query) Where(w string) *Query {
-	q.where = w
-	return q
-}
-
-func newQuery(i interface{}) *Query {
-	ri := reflect.ValueOf(i)
 	if ri.Kind() != reflect.Ptr || ri.IsNil() {
 		return nil
 	}
-	q := new(Query)
+	q := new(QuerySetter)
+	defer func() {
+		tableMap[ri.Kind()] = q
+	}()
 	table, cs := structToTable(reflect.Indirect(ri).Interface())
 	q.table = table
 	q.columns = cs
-	q.query = query(table, cs)
 	q.dests = make([]interface{}, len(cs))
 	for k, v := range cs {
-		var ti interface{}
-		switch v.typ.Kind() {
-		case reflect.Int:
-			ti = new(int)
-		case reflect.Int64:
-			ti = new(int64)
-		case reflect.String:
-			ti = new(string)
-		}
-		q.dests[k] = ti
+		q.dests[k] = newInterface(v.typ.Kind())
 	}
 	return q
 }
 
-// 对返回值进行赋值
-func convertAssign(i interface{}, rows *sql.Rows, q *Query) error {
-	err := berforeAssign(rows, q)
+func newInterface(k reflect.Kind) interface{} {
+	var ti interface{}
+	switch k {
+	case reflect.Int:
+		ti = new(int)
+	case reflect.Int64:
+		ti = new(int64)
+	case reflect.String:
+		ti = new(string)
+	}
+	return ti
+}
+
+func convertAssignRows(i interface{}, rows *sql.Rows) error {
+	typ := reflect.TypeOf(i)
+	if typ.Kind() != reflect.Ptr {
+		return errors.New("not ptr")
+	}
+	typ = typ.Elem()
+	if typ.Kind() != reflect.Slice {
+		return errors.New("need a slice container")
+	}
+	typ = typ.Elem()
+	var q *QuerySetter
+	if typ.Kind() == reflect.Struct {
+		q = newQuery(reflect.New(typ))
+		if q == nil {
+			return errors.New("q is not support")
+		}
+	}
+	loop := 0
+	v := reflect.Indirect(reflect.ValueOf(i))
+	for rows.Next() {
+		if loop >= v.Cap() {
+			newCap := v.Cap()
+			if newCap == 0 {
+				newCap = 1
+			} else {
+				newCap *= 2
+			}
+			nv := reflect.MakeSlice(v.Type(), v.Len(), newCap)
+			reflect.Copy(nv, v)
+			v.Set(nv)
+		}
+		if loop >= v.Len() {
+			v.SetLen(loop + 1)
+		}
+		st := reflect.New(typ)
+		st = st.Elem()
+		if q != nil {
+			scanValue(rows, q, st)
+		} else {
+			ti := newInterface(typ.Kind())
+			rows.Scan(ti)
+			st.Set(reflect.ValueOf(ti).Elem())
+		}
+		v.Index(loop).Set(st)
+		loop++
+	}
+	return nil
+}
+func convertAssignRow(i interface{}, row *sql.Row) error {
+	typ := reflect.TypeOf(i)
+
+	if typ.Kind() == reflect.Ptr && typ.Kind() != reflect.Struct {
+		return row.Scan(i)
+	}
+
+	q := newQuery(reflect.ValueOf(i))
+	if q == nil {
+		return errors.New("nil struct")
+	}
+	st := reflect.ValueOf(i).Elem()
+	return scanValue(row, q, st)
+}
+
+func scanValue(sc sqlScanner, q *QuerySetter, st reflect.Value) error {
+	err := sc.Scan(q.dests...)
 	if err != nil {
 		return err
 	}
-	st := reflect.ValueOf(i).Elem()
 	for idx, c := range q.columns {
 		// different assign func here
 		switch c.typ.Kind() {
@@ -99,25 +132,4 @@ func convertAssign(i interface{}, rows *sql.Rows, q *Query) error {
 		}
 	}
 	return nil
-}
-func berforeAssign(rows *sql.Rows, q *Query) error {
-	for rows.Next() {
-		err := rows.Scan(q.dests...)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func query(table string, cs []column) string {
-	s := "select "
-	for k, v := range cs {
-		s += v.name
-		if k != len(cs)-1 {
-			s += ","
-		}
-	}
-	s += " from " + table
-	return s
 }
