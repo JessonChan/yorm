@@ -29,7 +29,6 @@ type sqlScanner interface {
 	Scan(dest ...interface{}) error
 }
 
-
 var tableMap map[reflect.Kind]*querySetter = make(map[reflect.Kind]*querySetter)
 
 func newQuery(ri reflect.Value) *querySetter {
@@ -92,7 +91,11 @@ func convertAssignRows(i interface{}, rows *sql.Rows) error {
 			if newCap == 0 {
 				newCap = 1
 			} else {
-				newCap *= 2
+				if newCap < 1024 {
+					newCap += newCap
+				} else {
+					newCap += newCap / 4
+				}
 			}
 			nv := reflect.MakeSlice(v.Type(), v.Len(), newCap)
 			reflect.Copy(nv, v)
