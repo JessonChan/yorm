@@ -8,17 +8,17 @@ import (
 )
 
 // return lastInsertId and error if has
-func Insert(i interface{}, args ...interface{}) (int64, error) {
+func Insert(i interface{}, args ...string) (int64, error) {
 	q := newQuery(reflect.ValueOf(i))
 	if q == nil {
 		return 0, errors.New("your object not support")
 	}
-	clause := "insert into " + q.table + " ("
+	clause := "insert into " + q.table + " set "
 
 	fs := ""
-	vs := ""
 	e := reflect.ValueOf(i).Elem()
 	var pk reflect.Value
+	dests := []interface{}{}
 
 	if len(args) > 0 {
 		for _, name := range args {
@@ -27,8 +27,8 @@ func Insert(i interface{}, args ...interface{}) (int64, error) {
 				pk = v
 				continue
 			}
-			fs += fmt.Sprintf(",%v", name)
-			vs += fmt.Sprintf(",'%v'", v.Interface())
+			fs += fmt.Sprintf(",%v=?", name)
+			dests = append(dests, v.Interface())
 		}
 		if !pk.IsValid() {
 			pk = filedByName(e, "id")
@@ -41,20 +41,20 @@ func Insert(i interface{}, args ...interface{}) (int64, error) {
 				pk = v
 				continue
 			}
-			fs += fmt.Sprintf(",%v", c.name)
-			vs += fmt.Sprintf(",'%v'", v.Interface())
+			fs += fmt.Sprintf(",%v=?", c.name)
+			dests = append(dests, v.Interface())
 		}
 	}
-	if fs == "" || vs == "" {
+	if fs == "" {
 		return 0, errors.New("no filed to insert")
 	}
-	clause += fs[1:] + ") values ("
-	clause += vs[1:] + ")"
+	clause += fs[1:]
+	fmt.Println(clause)
 	stmt, err := getStmt(clause)
 	if err != nil {
 		return 0, err
 	}
-	r, err := stmt.Exec(args...)
+	r, err := stmt.Exec(dests...)
 	if err != nil {
 		return 0, err
 	}
