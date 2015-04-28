@@ -19,15 +19,31 @@ func Insert(i interface{}, args ...interface{}) (int64, error) {
 	vs := ""
 	e := reflect.ValueOf(i).Elem()
 	var pk reflect.Value
-	for _, c := range q.columns {
-		//todo this is auto increase field
-		v := filedByName(e, c)
-		if strings.ToLower(c.name) == "id" || strings.ToLower(c.fieldName) == "id" {
-			pk = v
-			continue
+
+	if len(args) > 0 {
+		for _, name := range args {
+			v := filedByName(e, name)
+			if strings.ToLower(name) == "id" {
+				pk = v
+				continue
+			}
+			fs += fmt.Sprintf(",%v", name)
+			vs += fmt.Sprintf(",'%v'", v.Interface())
 		}
-		fs += fmt.Sprintf(",%v", c.name)
-		vs += fmt.Sprintf(",'%v'", v.Interface())
+		if !pk.IsValid() {
+			pk = filedByName(e, "id")
+		}
+	} else {
+		for _, c := range q.columns {
+			//todo this is auto increase field
+			v := filedByName(e, c.fieldName, c.name)
+			if strings.ToLower(c.name) == "id" || strings.ToLower(c.fieldName) == "id" {
+				pk = v
+				continue
+			}
+			fs += fmt.Sprintf(",%v", c.name)
+			vs += fmt.Sprintf(",'%v'", v.Interface())
+		}
 	}
 	if fs == "" || vs == "" {
 		return 0, errors.New("no filed to insert")
@@ -43,15 +59,15 @@ func Insert(i interface{}, args ...interface{}) (int64, error) {
 		return 0, err
 	}
 	id, err := r.LastInsertId()
-	if id > 0 {
+	if id > 0 && pk.IsValid() {
 		pk.SetInt(id)
 	}
 	return id, err
 }
 
-func filedByName(e reflect.Value, c column) reflect.Value {
+func filedByName(e reflect.Value, names ...string) reflect.Value {
 	var f reflect.Value
-	for _, name := range []string{c.fieldName, c.name} {
+	for _, name := range names {
 		f = e.FieldByName(name)
 		if f.IsValid() {
 			return f
