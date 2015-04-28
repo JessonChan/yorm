@@ -48,12 +48,12 @@ func newQuery(ri reflect.Value) *querySetter {
 	q.columns = cs
 	q.dests = make([]interface{}, len(cs))
 	for k, v := range cs {
-		q.dests[k] = newInterface(v.typ.Kind())
+		q.dests[k] = newPtrInterface(v.typ.Kind())
 	}
 	return q
 }
 
-func newInterface(k reflect.Kind) interface{} {
+func newPtrInterface(k reflect.Kind) interface{} {
 	var ti interface{}
 	switch k {
 	case reflect.Int:
@@ -85,7 +85,7 @@ func convertAssignRows(i interface{}, rows *sql.Rows) error {
 	}
 	size := 0
 	v := reflect.Indirect(reflect.ValueOf(i))
-	ti := newInterface(typ.Kind())
+	ti := newPtrInterface(typ.Kind())
 	for rows.Next() {
 		if size >= v.Cap() {
 			newCap := v.Cap()
