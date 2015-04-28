@@ -2,19 +2,19 @@ package yorm
 
 import "testing"
 
-func TestCamel2Unserscore_1(t *testing.T) {
-	if camel2underscore("") != "" {
+func TestCamelToUnserscore_1(t *testing.T) {
+	if camelToUnderscore("") != "" {
 		t.Fail()
 	}
-	if camel2underscore("U") != "u" {
+	if camelToUnderscore("U") != "u" {
 		t.Fail()
 	}
-	if camel2underscore("UserName") != "user_name" {
+	if camelToUnderscore("UserName") != "user_name" {
 		t.Fail()
 	}
 }
-func TestUnderscore2Camel_2(t *testing.T) {
-	if underscore2camel("user_name") != "UserName" {
+func TestUnderscoreToCamel_2(t *testing.T) {
+	if underscoreToCamel("user_name") != "UserName" {
 		t.Fail()
 	}
 }
