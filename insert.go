@@ -46,7 +46,6 @@ func Insert(i interface{}, args ...string) (int64, error) {
 		return 0, errors.New("no filed to insert")
 	}
 	clause += fs[1:]
-	fmt.Println(clause)
 	stmt, err := getStmt(clause)
 	if err != nil {
 		return 0, err
@@ -61,7 +60,6 @@ func Insert(i interface{}, args ...string) (int64, error) {
 	}
 	return id, err
 }
-
 
 func filedByName(e reflect.Value, names ...string) reflect.Value {
 	var f reflect.Value
