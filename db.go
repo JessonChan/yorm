@@ -10,26 +10,21 @@ type DriverName string
 
 const (
 	DriverMySQL DriverName = "mysql"
-
-	//DriverDefault is  the default driver(mysql)
-	DriverDefault = DriverMySQL
 )
 
+// main db to operate ,maybe will support multi dbs(read/write ...)
 var sqlDb *sql.DB
+
+// one struct reflect to a table query setter
 var tableMap = map[reflect.Kind]*querySetter{}
+
+// stmt to prepare db conn
 var stmtMap = map[string]*sql.Stmt{}
 
 // Register register a database driver.
 func Register(dsn string, driver ...DriverName) error {
 	var err error
-
-	if len(driver) != 0 {
-		sqlDb, err = sql.Open(string(driver[0]), dsn)
-
-	} else {
-		sqlDb, err = sql.Open(string(DriverDefault), dsn)
-	}
-
+	sqlDb, err = sql.Open(string(append(driver, DriverMySQL)[0]), dsn)
 	if sqlDb == nil {
 		return err
 	}
