@@ -69,10 +69,10 @@ func convertAssignRows(i interface{}, rows *sql.Rows) error {
 			return errors.New("q is not support")
 		}
 	}
-	loop := 0
+	size := 0
 	v := reflect.Indirect(reflect.ValueOf(i))
 	for rows.Next() {
-		if loop >= v.Cap() {
+		if size >= v.Cap() {
 			newCap := v.Cap()
 			if newCap == 0 {
 				newCap = 1
@@ -83,8 +83,8 @@ func convertAssignRows(i interface{}, rows *sql.Rows) error {
 			reflect.Copy(nv, v)
 			v.Set(nv)
 		}
-		if loop >= v.Len() {
-			v.SetLen(loop + 1)
+		if size >= v.Len() {
+			v.SetLen(size + 1)
 		}
 		st := reflect.New(typ)
 		st = st.Elem()
@@ -95,8 +95,8 @@ func convertAssignRows(i interface{}, rows *sql.Rows) error {
 			rows.Scan(ti)
 			st.Set(reflect.ValueOf(ti).Elem())
 		}
-		v.Index(loop).Set(st)
-		loop++
+		v.Index(size).Set(st)
+		size++
 	}
 	return nil
 }
