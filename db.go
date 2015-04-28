@@ -21,3 +21,15 @@ func Register(dbPath string) error {
 	}
 	return sqlDb.Ping()
 }
+
+func getStmt(clause string) (*sql.Stmt, error) {
+	stmt := stmtMap[clause]
+	var err error
+	if stmt == nil {
+		stmt, err = sqlDb.Prepare(clause)
+		if stmt != nil {
+			stmtMap[clause] = stmt
+		}
+	}
+	return stmt, err
+}

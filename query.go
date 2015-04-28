@@ -16,6 +16,7 @@ type sqlScanner interface {
 	Scan(dest ...interface{}) error
 }
 
+
 func Query(i interface{}, query string, args ...interface{}) error {
 	typ := reflect.TypeOf(i)
 	if typ.Kind() != reflect.Ptr {
