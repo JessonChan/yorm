@@ -5,9 +5,9 @@ import (
 	"strings"
 )
 
-func Update(clause string, args ...interface{}) (int64, error) {
-	if !strings.HasPrefix(clause, "update ") {
-		return 0, errors.New("update clause must be start with update keyword")
+func Delete(clause string, args ...interface{}) (int64, error) {
+	if !strings.HasPrefix(clause, "delete ") {
+		return 0, errors.New("delete clause must be start with delete keyword")
 	}
 	stmt, err := getStmt(clause)
 	if err != nil {
