@@ -6,7 +6,7 @@ import (
 	"reflect"
 )
 
-type QuerySetter struct {
+type querySetter struct {
 	table   string
 	dests   []interface{}
 	columns []column
@@ -30,16 +30,16 @@ type sqlScanner interface {
 }
 
 
-var tableMap map[reflect.Kind]*QuerySetter = make(map[reflect.Kind]*QuerySetter)
+var tableMap map[reflect.Kind]*querySetter = make(map[reflect.Kind]*querySetter)
 
-func newQuery(ri reflect.Value) *QuerySetter {
+func newQuery(ri reflect.Value) *querySetter {
 	if q, ok := tableMap[ri.Kind()]; ok {
 		return q
 	}
 	if ri.Kind() != reflect.Ptr || ri.IsNil() {
 		return nil
 	}
-	q := new(QuerySetter)
+	q := new(querySetter)
 	defer func() {
 		tableMap[ri.Kind()] = q
 	}()
@@ -76,7 +76,7 @@ func convertAssignRows(i interface{}, rows *sql.Rows) error {
 		return errors.New("need a slice container")
 	}
 	typ = typ.Elem()
-	var q *QuerySetter
+	var q *querySetter
 	if typ.Kind() == reflect.Struct {
 		q = newQuery(reflect.New(typ))
 		if q == nil {
@@ -129,7 +129,7 @@ func convertAssignRow(i interface{}, row *sql.Row) error {
 	return scanValue(row, q, st)
 }
 
-func scanValue(sc sqlScanner, q *QuerySetter, st reflect.Value) error {
+func scanValue(sc sqlScanner, q *querySetter, st reflect.Value) error {
 	err := sc.Scan(q.dests...)
 	if err != nil {
 		return err
