@@ -26,7 +26,7 @@ func getStmt(clause string) (*sql.Stmt, error) {
 	var err error
 	clause, err = validClause(clause)
 	if err != nil {
-		return err
+		return nil,err
 	}
 	stmt := stmtMap[clause]
 	if stmt == nil {
