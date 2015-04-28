@@ -19,31 +19,28 @@ func Insert(i interface{}, args ...string) (int64, error) {
 	e := reflect.ValueOf(i).Elem()
 	var pk reflect.Value
 	dests := []interface{}{}
-
-	if len(args) > 0 {
-		for _, name := range args {
-			v := filedByName(e, name)
-			if strings.ToLower(name) == "id" {
-				pk = v
-				continue
-			}
-			fs += fmt.Sprintf(",%v=?", name)
-			dests = append(dests, v.Interface())
-		}
-		if !pk.IsValid() {
-			pk = filedByName(e, "id")
-		}
+	var columns []column
+	if len(args) == 0 {
+		columns = q.columns
 	} else {
-		for _, c := range q.columns {
-			//todo this is auto increase field
-			v := filedByName(e, c.fieldName, c.name)
-			if strings.ToLower(c.name) == "id" || strings.ToLower(c.fieldName) == "id" {
-				pk = v
-				continue
+		for _, arg := range args {
+			arg = strings.ToLower(arg)
+			for _, c := range q.columns {
+				if strings.ToLower(c.fieldName) == arg || strings.ToLower(c.name) == arg {
+					columns = append(columns, c)
+				}
 			}
-			fs += fmt.Sprintf(",%v=?", c.name)
-			dests = append(dests, v.Interface())
 		}
+	}
+	for _, c := range columns {
+		//todo this is auto increase field
+		v := filedByName(e, c.fieldName)
+		if strings.ToLower(c.fieldName) == "id" {
+			pk = v
+			continue
+		}
+		fs += fmt.Sprintf(",%v=?", c.name)
+		dests = append(dests, v.Interface())
 	}
 	if fs == "" {
 		return 0, errors.New("no filed to insert")
@@ -64,6 +61,7 @@ func Insert(i interface{}, args ...string) (int64, error) {
 	}
 	return id, err
 }
+
 
 func filedByName(e reflect.Value, names ...string) reflect.Value {
 	var f reflect.Value
