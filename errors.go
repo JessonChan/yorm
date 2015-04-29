@@ -1,10 +1,12 @@
 package yorm
 
-import "errors"
+import (
+	"errors"
+)
 
 var (
-	ErrNotSupported  = errors.New("ErrNotSupported")
-	ErrNonPtr        = errors.New("ErrNonPtr")
-	ErrIllegalParams = errors.New("ErrIllegalParams")
-	ErrNonSlice      = errors.New("ErrNonSlice")
+	ErrIllegalParams = errors.New("illegal parameter(s)")
+	ErrNonPtr        = errors.New("must be the pointer to the modified object")
+	ErrNonSlice      = errors.New("must be a slice")
+	ErrNotSupported  = errors.New("Not supported now")
 )

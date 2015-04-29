@@ -5,11 +5,11 @@ import (
 	"reflect"
 )
 
-//DriverName standard for database's driver name such as: mysql, oracle, db2 and so on.
-type DriverName string
-
 const (
-	DriverMySQL DriverName = "mysql"
+	DriverMySQL = "mysql"
+
+	//DriverDefault is  the default driver(mysql)
+	DriverDefault = DriverMySQL
 )
 
 // main db to operate ,maybe will support multi dbs(read/write ...)
@@ -22,9 +22,11 @@ var tableMap = map[reflect.Kind]*querySetter{}
 var stmtMap = map[string]*sql.Stmt{}
 
 // Register register a database driver.
-func Register(dsn string, driver ...DriverName) error {
+func Register(dsn string, driver ...string) error {
 	var err error
-	sqlDb, err = sql.Open(string(append(driver, DriverMySQL)[0]), dsn)
+
+	sqlDb, err = sql.Open(append(driver, DriverMySQL)[0], dsn)
+
 	if sqlDb == nil {
 		return err
 	}
