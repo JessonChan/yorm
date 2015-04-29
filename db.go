@@ -7,9 +7,6 @@ import (
 
 const (
 	DriverMySQL = "mysql"
-
-	//DriverDefault is  the default driver(mysql)
-	DriverDefault = DriverMySQL
 )
 
 // main db to operate ,maybe will support multi dbs(read/write ...)

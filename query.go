@@ -145,7 +145,7 @@ func convertAssignRows(i interface{}, rows *sql.Rows) error {
 func convertAssignRow(i interface{}, row *sql.Row) error {
 	typ := reflect.TypeOf(i)
 
-	if typ.Kind() == reflect.Ptr && typ.Kind() != reflect.Struct {
+	if typ.Kind() == reflect.Ptr && typ.Elem().Kind() != reflect.Struct {
 		return row.Scan(i)
 	}
 
