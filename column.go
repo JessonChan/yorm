@@ -1,6 +1,9 @@
 package yorm
 
-import "reflect"
+import (
+	"reflect"
+	"time"
+)
 
 //field name
 const (
@@ -64,7 +67,11 @@ func structColumns(t reflect.Type) (columns []column) {
 			}
 		} else {
 			if fieldType.Kind() == reflect.Struct {
-				isInner = true
+				if fieldType.Kind() == reflect.TypeOf(time.Time{}).Kind() {
+				} else {
+					isInner = true
+				}
+
 			}
 		}
 		c := column{

@@ -3,7 +3,9 @@ package yorm
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"reflect"
+	"time"
 )
 
 type querySetter struct {
@@ -84,6 +86,11 @@ func newPtrInterface(t reflect.Type) interface{} {
 		ti = new(int64)
 	case reflect.String:
 		ti = new(string)
+	case reflect.Struct:
+		switch t {
+		case reflect.TypeOf(time.Time{}):
+			ti = new(string)
+		}
 	}
 	return ti
 }
@@ -172,6 +179,24 @@ func scanValue(sc sqlScanner, q *querySetter, st reflect.Value) error {
 			st.Field(c.fieldNum).SetInt(int64(*(q.dests[idx].(*int64))))
 		case reflect.String:
 			st.Field(c.fieldNum).SetString(string(*(q.dests[idx].(*string))))
+		case reflect.Struct:
+			switch c.typ {
+			case reflect.TypeOf(time.Time{}):
+				timeStr := string(*(q.dests[idx].(*string)))
+				fmt.Println(timeStr)
+				var layout string
+				if len(timeStr) == 10 {
+					layout = "2006-01-02"
+				}
+				if len(timeStr) == 19 {
+					layout = "2006-01-02 15:04:05"
+				}
+				timeTime, err := time.ParseInLocation(layout, timeStr, time.Local)
+				if timeTime.IsZero() {
+					return err
+				}
+				st.Field(c.fieldNum).Set(reflect.ValueOf(timeTime))
+			}
 		}
 	}
 	return nil
