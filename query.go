@@ -183,7 +183,6 @@ func scanValue(sc sqlScanner, q *querySetter, st reflect.Value) error {
 			switch c.typ {
 			case reflect.TypeOf(time.Time{}):
 				timeStr := string(*(q.dests[idx].(*string)))
-				fmt.Println(timeStr)
 				var layout string
 				if len(timeStr) == 10 {
 					layout = "2006-01-02"
