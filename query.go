@@ -3,7 +3,6 @@ package yorm
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"reflect"
 	"time"
 )
