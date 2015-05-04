@@ -21,10 +21,10 @@ var tableMap = map[reflect.Kind]*querySetter{}
 var stmtMap = map[string]*sql.Stmt{}
 
 type sqlExecutor interface {
-	Select(i interface{}, clause string, args ...string) error
+	Select(i interface{}, clause string, args ...interface{}) error
 	Insert(i interface{}, args ...string) (int64, error)
-	Update(clause string, args ...string) (int64, error)
-	Delete(clause string, args ...string) (int64, error)
+	Update(clause string, args ...interface{}) (int64, error)
+	Delete(clause string, args ...interface{}) (int64, error)
 }
 
 type executor struct {
@@ -65,7 +65,7 @@ func Register(dsn string, driver ...string) error {
 	return err
 }
 
-func Using(name string) *sqlExecutor {
+func Using(name string) sqlExecutor {
 	return executorMap[name]
 }
 

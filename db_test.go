@@ -21,6 +21,8 @@ func TestYorm(t *testing.T) {
 		t.Log(err)
 		t.FailNow()
 	}
+	RegisterWithName("root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8", "read")
+	RegisterWithName("root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8", "write")
 	p := ProgramLanguage{Name: "PHP", Position: 7, RankMonth: time.Now(), Created: time.Now()}
 	_, err = Insert(&p)
 	if err != nil {
@@ -28,10 +30,10 @@ func TestYorm(t *testing.T) {
 		t.FailNow()
 	}
 	t.Log(p)
-	Update("update program_language set position=? where id=? ", 12, p.Id)
+	Using("write").Update("update program_language set position=? where id=? ", 12, p.Id)
 
 	var p1 ProgramLanguage
-	Select(&p1, "select * from program_language where id=?", p.Id)
+	Using("read").Select(&p1, "select * from program_language where id=?", p.Id)
 
 	var p2 ProgramLanguage
 	Select(&p2, "where id=?", p.Id)
