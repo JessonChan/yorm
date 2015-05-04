@@ -19,6 +19,10 @@ type sqlScanner interface {
 	Scan(dest ...interface{}) error
 }
 
+var (
+	TIME_TYPE = reflect.TypeOf(time.Time{})
+)
+
 //Query do a select operation.
 // if the is a struct ,you need not write select x,y,z,you need only write the where condition ...
 func Select(i interface{}, condition string, args ...interface{}) error {
@@ -120,7 +124,7 @@ func newPtrInterface(t reflect.Type) interface{} {
 		ti = new(string)
 	case reflect.Struct:
 		switch t {
-		case reflect.TypeOf(time.Time{}):
+		case TIME_TYPE:
 			ti = new(string)
 		}
 	}
@@ -213,7 +217,7 @@ func scanValue(sc sqlScanner, q *querySetter, st reflect.Value) error {
 			st.Field(c.fieldNum).SetString(string(*(q.dests[idx].(*string))))
 		case reflect.Struct:
 			switch c.typ {
-			case reflect.TypeOf(time.Time{}):
+			case TIME_TYPE:
 				timeStr := string(*(q.dests[idx].(*string)))
 				var layout string
 				if len(timeStr) == 10 {
