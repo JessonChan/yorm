@@ -1,6 +1,7 @@
 package yorm
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"reflect"
@@ -9,11 +10,15 @@ import (
 
 //Insert  return lastInsertId and error if has
 func Insert(i interface{}, args ...string) (int64, error) {
-	q := newQuerySettr(reflect.ValueOf(i))
+	q := newQuerySetter(reflect.ValueOf(i))
 	if q == nil {
 		return 0, ErrNotSupported
 	}
-	clause := "insert into " + q.table + " set "
+
+	clause := &bytes.Buffer{}
+	clause.WriteString("INSERT INTO ")
+	clause.WriteString(q.table)
+	clause.WriteString(" SET ")
 
 	fs := ""
 	e := reflect.ValueOf(i).Elem()
@@ -45,8 +50,10 @@ func Insert(i interface{}, args ...string) (int64, error) {
 	if fs == "" {
 		return 0, errors.New("no filed to insert")
 	}
-	clause += fs[1:]
-	stmt, err := getStmt(clause)
+
+	clause.WriteString(fs[1:])
+
+	stmt, err := getStmt(clause.String())
 	if err != nil {
 		return 0, err
 	}
