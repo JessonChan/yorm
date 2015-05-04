@@ -37,21 +37,13 @@ var executorMap = map[string]*executor{}
 
 const defaultExecutorName = "default"
 
-// Register register a database driver.
-func Register(dsn string, driver ...string) error {
-
-	if defaultExecutor != nil {
+func RegisterWithName(dsn, name string, driver ...string) error {
+	if executorMap[name] != nil {
 		return nil
 	}
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
-
-	if defaultExecutor != nil {
-		return nil
-	}
-
 	sqlDb, err := sql.Open(append(driver, DriverMySQL)[0], dsn)
-
 	if sqlDb == nil {
 		return err
 	}
@@ -59,13 +51,22 @@ func Register(dsn string, driver ...string) error {
 	if err != nil {
 		return err
 	}
-	defaultExecutor = &executor{sqlDb}
-	executorMap[defaultExecutorName] = defaultExecutor
+	executorMap[name] = &executor{sqlDb}
 	return nil
 }
 
+// Register register a database driver.
+func Register(dsn string, driver ...string) error {
+	err := RegisterWithName(dsn, defaultExecutorName, driver...)
+	if err == nil {
+		defaultExecutor = executorMap[defaultExecutorName]
+		return nil
+	}
+	return err
+}
+
 func Using(name string) *sqlExecutor {
-	return nil
+	return executorMap[name]
 }
 
 func (this *executor) getStmt(clause string) (*sql.Stmt, error) {
