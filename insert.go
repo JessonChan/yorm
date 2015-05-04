@@ -9,7 +9,7 @@ import (
 )
 
 //Insert  return lastInsertId and error if has
-func Insert(i interface{}, args ...string) (int64, error) {
+func (this *executor) Insert(i interface{}, args ...string) (int64, error) {
 	q := newQuerySetter(reflect.ValueOf(i))
 	if q == nil {
 		return 0, ErrNotSupported
@@ -77,4 +77,8 @@ func filedByName(e reflect.Value, names ...string) reflect.Value {
 		}
 	}
 	return f
+}
+
+func Insert(i interface{}, args ...string) (int64, error) {
+	return defaultExecutor.Insert(i, args...)
 }

@@ -5,11 +5,11 @@ import (
 	"strings"
 )
 
-func Update(clause string, args ...interface{}) (int64, error) {
+func (this *executor) Update(clause string, args ...interface{}) (int64, error) {
 	if !strings.HasPrefix(clause, "update ") {
 		return 0, errors.New("update clause must be start with update keyword")
 	}
-	stmt, err := getStmt(clause)
+	stmt, err := this.getStmt(clause)
 	if err != nil {
 		return 0, err
 	}
@@ -19,4 +19,8 @@ func Update(clause string, args ...interface{}) (int64, error) {
 	}
 	id, err := r.RowsAffected()
 	return id, err
+}
+
+func Update(clause string, args ...interface{}) (int64, error) {
+	return defaultExecutor.Update(clause, args...)
 }

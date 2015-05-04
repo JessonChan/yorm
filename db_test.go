@@ -31,7 +31,7 @@ func TestYorm(t *testing.T) {
 	Update("update program_language set position=? where id=? ", 12, p.Id)
 
 	var p1 ProgramLanguage
-	query(&p1, "select * from program_language where id=?", p.Id)
+	Select(&p1, "select * from program_language where id=?", p.Id)
 
 	var p2 ProgramLanguage
 	Select(&p2, "where id=?", p.Id)
@@ -50,7 +50,7 @@ func TestYorm(t *testing.T) {
 	}
 	t.Log(p1)
 	Delete("delete from program_language where id=? ", p.Id)
-	err = query(&p1, "select * from program_language where id=?", p.Id)
+	err = Select(&p1, "select * from program_language where id=?", p.Id)
 	t.Log(err)
 	if err == nil {
 		t.FailNow()

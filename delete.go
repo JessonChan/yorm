@@ -5,11 +5,11 @@ import (
 	"strings"
 )
 
-func Delete(clause string, args ...interface{}) (int64, error) {
+func (this *executor) Delete(clause string, args ...interface{}) (int64, error) {
 	if !strings.HasPrefix(clause, "delete ") {
 		return 0, errors.New("delete clause must be start with delete keyword")
 	}
-	stmt, err := getStmt(clause)
+	stmt, err := this.getStmt(clause)
 	if err != nil {
 		return 0, err
 	}
@@ -19,4 +19,8 @@ func Delete(clause string, args ...interface{}) (int64, error) {
 	}
 	id, err := r.RowsAffected()
 	return id, err
+}
+
+func Delete(clause string, args ...interface{}) (int64, error) {
+	return defaultExecutor.Delete(clause, args...)
 }
