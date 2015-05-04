@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"reflect"
+	"strings"
 	"time"
 )
 
@@ -15,6 +16,24 @@ type querySetter struct {
 
 type sqlScanner interface {
 	Scan(dest ...interface{}) error
+}
+
+//Query do a select operation.
+// if the is a struct ,you need not write select x,y,z,you need only write the where condition ...
+func Select(i interface{}, condition string, args ...interface{}) error {
+	q := newQuery(i)
+	if q != nil {
+		queryClause := "select "
+		for _, c := range q.columns {
+			queryClause += c.name + " "
+		}
+		if !strings.HasPrefix(condition, "where") {
+			queryClause += "where "
+		}
+		queryClause += condition
+		return Query(i, queryClause, args...)
+	}
+	return Query(i, condition, args...)
 }
 
 //Query do a query operation.

@@ -33,6 +33,13 @@ func TestYorm(t *testing.T) {
 	var p1 ProgramLanguage
 	Query(&p1, "select * from program_language where id=?", p.Id)
 
+	var p2 ProgramLanguage
+	Select(&p2, "where id=?", p.Id)
+	if p2.Id != p.Id {
+		t.Log(p2)
+		t.FailNow()
+	}
+
 	if p1.Name != p.Name {
 		t.Log(p1)
 		t.FailNow()
