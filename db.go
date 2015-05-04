@@ -22,14 +22,19 @@ var stmtMap = map[string]*sql.Stmt{}
 
 // Register register a database driver.
 func Register(dsn string, driver ...string) error {
+	if sqlDb != nil {
+		return nil
+	}
 
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
-	var err error
 	if sqlDb != nil {
 		return nil
 	}
+
+	var err error
+
 	sqlDb, err = sql.Open(append(driver, DriverMySQL)[0], dsn)
 
 	if sqlDb == nil {
