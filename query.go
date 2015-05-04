@@ -35,11 +35,11 @@ func Select(i interface{}, condition string, args ...interface{}) error {
 	}
 	queryClause := bytes.NewBufferString("SELECT ")
 	splitDot := ","
-	for i := 0; i < len(q.columns); i++ {
-		if i == len(q.columns)-1 {
+	for loop := 0; loop < len(q.columns); loop++ {
+		if loop == len(q.columns)-1 {
 			splitDot = " "
 		}
-		queryClause.WriteString(q.columns[i].name)
+		queryClause.WriteString(q.columns[loop].name)
 		queryClause.WriteString(splitDot)
 	}
 
