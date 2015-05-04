@@ -21,12 +21,17 @@ type sqlScanner interface {
 //Query do a select operation.
 // if the is a struct ,you need not write select x,y,z,you need only write the where condition ...
 func Select(i interface{}, condition string, args ...interface{}) error {
-	q := newQuery(i)
+	q := newQuery(reflect.ValueOf(i))
 	if q != nil {
 		queryClause := "select "
-		for _, c := range q.columns {
-			queryClause += c.name + " "
+		splitDot := ","
+		for i := 0; i < len(q.columns); i++ {
+			if i == len(q.columns)-1 {
+				splitDot = " "
+			}
+			queryClause += q.columns[i].name + splitDot
 		}
+		queryClause += "from " + q.table + " "
 		if !strings.HasPrefix(condition, "where") {
 			queryClause += "where "
 		}
