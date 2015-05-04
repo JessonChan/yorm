@@ -21,28 +21,31 @@ type sqlScanner interface {
 //Query do a select operation.
 // if the is a struct ,you need not write select x,y,z,you need only write the where condition ...
 func Select(i interface{}, condition string, args ...interface{}) error {
-	q := newQuery(reflect.ValueOf(i))
-	if q != nil {
-		queryClause := "select "
-		splitDot := ","
-		for i := 0; i < len(q.columns); i++ {
-			if i == len(q.columns)-1 {
-				splitDot = " "
-			}
-			queryClause += q.columns[i].name + splitDot
-		}
-		queryClause += "from " + q.table + " "
-		if !strings.HasPrefix(condition, "where") {
-			queryClause += "where "
-		}
-		queryClause += condition
-		return Query(i, queryClause, args...)
+	if strings.HasPrefix(condition, "select") {
+		return query(i, condition, args...)
 	}
-	return Query(i, condition, args...)
+	q := newQuerySettr(reflect.ValueOf(i))
+	if q == nil {
+		return query(i, condition, args...)
+	}
+	queryClause := "select "
+	splitDot := ","
+	for i := 0; i < len(q.columns); i++ {
+		if i == len(q.columns)-1 {
+			splitDot = " "
+		}
+		queryClause += q.columns[i].name + splitDot
+	}
+	queryClause += "from " + q.table + " "
+	if !strings.HasPrefix(condition, "where") {
+		queryClause += "where "
+	}
+	queryClause += condition
+	return query(i, queryClause, args...)
 }
 
 //Query do a query operation.
-func Query(i interface{}, query string, args ...interface{}) error {
+func query(i interface{}, query string, args ...interface{}) error {
 	typ := reflect.TypeOf(i)
 	if typ.Kind() != reflect.Ptr {
 		return ErrNonPtr
@@ -78,7 +81,7 @@ func queryList(i interface{}, rows *sql.Rows) error {
 	return convertAssignRows(i, rows)
 }
 
-func newQuery(ri reflect.Value) *querySetter {
+func newQuerySettr(ri reflect.Value) *querySetter {
 	if q, ok := tableMap[ri.Kind()]; ok {
 		return q
 	}
@@ -130,7 +133,7 @@ func convertAssignRows(i interface{}, rows *sql.Rows) error {
 	typ = typ.Elem()
 	var q *querySetter
 	if typ.Kind() == reflect.Struct {
-		q = newQuery(reflect.New(typ))
+		q = newQuerySettr(reflect.New(typ))
 		if q == nil {
 			return errors.New("q is not support")
 		}
@@ -180,7 +183,7 @@ func convertAssignRow(i interface{}, row *sql.Row) error {
 		return row.Scan(i)
 	}
 
-	q := newQuery(reflect.ValueOf(i))
+	q := newQuerySettr(reflect.ValueOf(i))
 	if q == nil {
 		return errors.New("nil struct")
 	}

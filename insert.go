@@ -9,7 +9,7 @@ import (
 
 //Insert  return lastInsertId and error if has
 func Insert(i interface{}, args ...string) (int64, error) {
-	q := newQuery(reflect.ValueOf(i))
+	q := newQuerySettr(reflect.ValueOf(i))
 	if q == nil {
 		return 0, ErrNotSupported
 	}
