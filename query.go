@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"reflect"
+	"strings"
+	"time"
 )
 
 type querySetter struct {
@@ -16,8 +18,34 @@ type sqlScanner interface {
 	Scan(dest ...interface{}) error
 }
 
+//Query do a select operation.
+// if the is a struct ,you need not write select x,y,z,you need only write the where condition ...
+func Select(i interface{}, condition string, args ...interface{}) error {
+	if strings.HasPrefix(condition, "select") {
+		return query(i, condition, args...)
+	}
+	q := newQuerySettr(reflect.ValueOf(i))
+	if q == nil {
+		return query(i, condition, args...)
+	}
+	queryClause := "select "
+	splitDot := ","
+	for i := 0; i < len(q.columns); i++ {
+		if i == len(q.columns)-1 {
+			splitDot = " "
+		}
+		queryClause += q.columns[i].name + splitDot
+	}
+	queryClause += "from " + q.table + " "
+	if !strings.HasPrefix(condition, "where") {
+		queryClause += "where "
+	}
+	queryClause += condition
+	return query(i, queryClause, args...)
+}
+
 //Query do a query operation.
-func Query(i interface{}, query string, args ...interface{}) error {
+func query(i interface{}, query string, args ...interface{}) error {
 	typ := reflect.TypeOf(i)
 	if typ.Kind() != reflect.Ptr {
 		return ErrNonPtr
@@ -53,7 +81,7 @@ func queryList(i interface{}, rows *sql.Rows) error {
 	return convertAssignRows(i, rows)
 }
 
-func newQuery(ri reflect.Value) *querySetter {
+func newQuerySettr(ri reflect.Value) *querySetter {
 	if q, ok := tableMap[ri.Kind()]; ok {
 		return q
 	}
@@ -69,12 +97,13 @@ func newQuery(ri reflect.Value) *querySetter {
 	q.columns = cs
 	q.dests = make([]interface{}, len(cs))
 	for k, v := range cs {
-		q.dests[k] = newPtrInterface(v.typ.Kind())
+		q.dests[k] = newPtrInterface(v.typ)
 	}
 	return q
 }
 
-func newPtrInterface(k reflect.Kind) interface{} {
+func newPtrInterface(t reflect.Type) interface{} {
+	k := t.Kind()
 	var ti interface{}
 	switch k {
 	case reflect.Int:
@@ -83,6 +112,11 @@ func newPtrInterface(k reflect.Kind) interface{} {
 		ti = new(int64)
 	case reflect.String:
 		ti = new(string)
+	case reflect.Struct:
+		switch t {
+		case reflect.TypeOf(time.Time{}):
+			ti = new(string)
+		}
 	}
 	return ti
 }
@@ -99,14 +133,14 @@ func convertAssignRows(i interface{}, rows *sql.Rows) error {
 	typ = typ.Elem()
 	var q *querySetter
 	if typ.Kind() == reflect.Struct {
-		q = newQuery(reflect.New(typ))
+		q = newQuerySettr(reflect.New(typ))
 		if q == nil {
 			return errors.New("q is not support")
 		}
 	}
 	size := 0
 	v := reflect.Indirect(reflect.ValueOf(i))
-	ti := newPtrInterface(typ.Kind())
+	ti := newPtrInterface(typ)
 	for rows.Next() {
 		if size >= v.Cap() {
 			newCap := v.Cap()
@@ -149,7 +183,7 @@ func convertAssignRow(i interface{}, row *sql.Row) error {
 		return row.Scan(i)
 	}
 
-	q := newQuery(reflect.ValueOf(i))
+	q := newQuerySettr(reflect.ValueOf(i))
 	if q == nil {
 		return errors.New("nil struct")
 	}
@@ -171,6 +205,23 @@ func scanValue(sc sqlScanner, q *querySetter, st reflect.Value) error {
 			st.Field(c.fieldNum).SetInt(int64(*(q.dests[idx].(*int64))))
 		case reflect.String:
 			st.Field(c.fieldNum).SetString(string(*(q.dests[idx].(*string))))
+		case reflect.Struct:
+			switch c.typ {
+			case reflect.TypeOf(time.Time{}):
+				timeStr := string(*(q.dests[idx].(*string)))
+				var layout string
+				if len(timeStr) == 10 {
+					layout = "2006-01-02"
+				}
+				if len(timeStr) == 19 {
+					layout = "2006-01-02 15:04:05"
+				}
+				timeTime, err := time.ParseInLocation(layout, timeStr, time.Local)
+				if timeTime.IsZero() {
+					return err
+				}
+				st.Field(c.fieldNum).Set(reflect.ValueOf(timeTime))
+			}
 		}
 	}
 	return nil

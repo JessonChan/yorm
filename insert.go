@@ -9,7 +9,7 @@ import (
 
 //Insert  return lastInsertId and error if has
 func Insert(i interface{}, args ...string) (int64, error) {
-	q := newQuery(reflect.ValueOf(i))
+	q := newQuerySettr(reflect.ValueOf(i))
 	if q == nil {
 		return 0, ErrNotSupported
 	}
@@ -40,7 +40,7 @@ func Insert(i interface{}, args ...string) (int64, error) {
 			continue
 		}
 		fs += fmt.Sprintf(",%v=?", c.name)
-		dests = append(dests, v.Interface())
+		dests = append(dests, fmt.Sprintf("%v", v.Interface()))
 	}
 	if fs == "" {
 		return 0, errors.New("no filed to insert")
