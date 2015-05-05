@@ -10,8 +10,6 @@ const (
 	DriverMySQL = "mysql"
 )
 
-// main db to operate ,maybe will support multi dbs(read/write ...)
-var sqlDb *sql.DB
 var dbMutex sync.RWMutex
 
 // one struct reflect to a table query setter
