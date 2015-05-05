@@ -57,4 +57,8 @@ func TestYorm(t *testing.T) {
 	if err == nil {
 		t.FailNow()
 	}
+	err = Using("nil").Select(&p1, "select * from program_language where id=?", p.Id)
+	if err != ErrNilSqlExecutor {
+		t.FailNow()
+	}
 }

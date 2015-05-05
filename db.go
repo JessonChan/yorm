@@ -64,8 +64,27 @@ func Register(dsn string, driver ...string) error {
 	return err
 }
 
+type nilSqlExecutor struct {
+}
+
+func (n nilSqlExecutor) Select(i interface{}, clause string, args ...interface{}) error {
+	return ErrNilSqlExecutor
+}
+func (n nilSqlExecutor) Insert(i interface{}, args ...string) (int64, error) {
+	return 0, ErrNilSqlExecutor
+}
+func (n nilSqlExecutor) Update(clause string, args ...interface{}) (int64, error) {
+	return 0, ErrNilSqlExecutor
+}
+func (n nilSqlExecutor) Delete(clause string, args ...interface{}) (int64, error) {
+	return 0, ErrNilSqlExecutor
+}
+
 func Using(name string) sqlExecutor {
-	return executorMap[name]
+	if e, ok := executorMap[name]; ok {
+		return e
+	}
+	return nilSqlExecutor{}
 }
 
 func (this *executor) getStmt(clause string) (*sql.Stmt, error) {
