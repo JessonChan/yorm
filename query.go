@@ -30,6 +30,10 @@ func Select(i interface{}, condition string, args ...interface{}) error {
 //Query do a select operation.
 // if the is a struct ,you need not write select x,y,z,you need only write the where condition ...
 func (this *executor) Select(i interface{}, condition string, args ...interface{}) error {
+	if this == nil {
+		return  ErrNilMethodReceiver
+	}
+
 	if strings.HasPrefix(strings.ToUpper(condition), "SELECT") {
 		return this.query(i, condition, args...)
 	}
