@@ -20,30 +20,59 @@ var tableMap = map[reflect.Kind]*querySetter{}
 // stmt to prepare db conn
 var stmtMap = map[string]*sql.Stmt{}
 
-// Register register a database driver.
-func Register(dsn string, driver ...string) error {
-	if sqlDb != nil {
+type sqlExecutor interface {
+	Select(i interface{}, clause string, args ...interface{}) error
+	Insert(i interface{}, args ...string) (int64, error)
+	Update(clause string, args ...interface{}) (int64, error)
+	Delete(clause string, args ...interface{}) (int64, error)
+}
+
+type executor struct {
+	*sql.DB
+}
+
+var defaultExecutor *executor
+
+var executorMap = map[string]*executor{}
+
+const defaultExecutorName = "default"
+
+func RegisterWithName(dsn, name string, driver ...string) error {
+	if executorMap[name] != nil {
 		return nil
 	}
-
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
-
-	if sqlDb != nil {
-		return nil
-	}
-
-	var err error
-
-	sqlDb, err = sql.Open(append(driver, DriverMySQL)[0], dsn)
-
+	sqlDb, err := sql.Open(append(driver, DriverMySQL)[0], dsn)
 	if sqlDb == nil {
 		return err
 	}
-	return sqlDb.Ping()
+	err = sqlDb.Ping()
+	if err != nil {
+		return err
+	}
+	executorMap[name] = &executor{sqlDb}
+	return nil
 }
 
-func getStmt(clause string) (*sql.Stmt, error) {
+// Register register a database driver.
+func Register(dsn string, driver ...string) error {
+	err := RegisterWithName(dsn, defaultExecutorName, driver...)
+	if err == nil {
+		defaultExecutor = executorMap[defaultExecutorName]
+		return nil
+	}
+	return err
+}
+
+func Using(name string) sqlExecutor {
+	return executorMap[name]
+}
+
+func (this *executor) getStmt(clause string) (*sql.Stmt, error) {
+	if this == nil {
+		return nil, ErrNotInitDefaultExecutor
+	}
 	var err error
 	clause, err = validClause(clause)
 	if err != nil {
@@ -51,12 +80,16 @@ func getStmt(clause string) (*sql.Stmt, error) {
 	}
 	stmt := stmtMap[clause]
 	if stmt == nil {
-		stmt, err = sqlDb.Prepare(clause)
+		stmt, err = this.Prepare(clause)
 		if stmt != nil {
 			stmtMap[clause] = stmt
 		}
 	}
 	return stmt, err
+}
+
+func getStmt(clause string) (*sql.Stmt, error) {
+	return defaultExecutor.getStmt(clause)
 }
 
 func validClause(clause string) (string, error) {

@@ -19,23 +19,31 @@ type sqlScanner interface {
 	Scan(dest ...interface{}) error
 }
 
+var (
+	TIME_TYPE = reflect.TypeOf(time.Time{})
+)
+
+func Select(i interface{}, condition string, args ...interface{}) error {
+	return defaultExecutor.Select(i, condition, args...)
+}
+
 //Query do a select operation.
 // if the is a struct ,you need not write select x,y,z,you need only write the where condition ...
-func Select(i interface{}, condition string, args ...interface{}) error {
+func (this *executor) Select(i interface{}, condition string, args ...interface{}) error {
 	if strings.HasPrefix(strings.ToUpper(condition), "SELECT") {
-		return query(i, condition, args...)
+		return this.query(i, condition, args...)
 	}
 	q := newQuerySetter(reflect.ValueOf(i))
 	if q == nil {
-		return query(i, condition, args...)
+		return this.query(i, condition, args...)
 	}
 	queryClause := bytes.NewBufferString("SELECT ")
 	splitDot := ","
-	for i := 0; i < len(q.columns); i++ {
-		if i == len(q.columns)-1 {
+	for loop := 0; loop < len(q.columns); loop++ {
+		if loop == len(q.columns)-1 {
 			splitDot = " "
 		}
-		queryClause.WriteString(q.columns[i].name)
+		queryClause.WriteString(q.columns[loop].name)
 		queryClause.WriteString(splitDot)
 	}
 
@@ -47,11 +55,11 @@ func Select(i interface{}, condition string, args ...interface{}) error {
 	}
 	queryClause.WriteString(condition)
 
-	return query(i, queryClause.String(), args...)
+	return this.query(i, queryClause.String(), args...)
 }
 
 //Query do a query operation.
-func query(i interface{}, query string, args ...interface{}) error {
+func (this *executor) query(i interface{}, query string, args ...interface{}) error {
 	typ := reflect.TypeOf(i)
 	if typ.Kind() != reflect.Ptr {
 		return ErrNonPtr
@@ -59,7 +67,7 @@ func query(i interface{}, query string, args ...interface{}) error {
 	typ = typ.Elem()
 	var err error
 	var stmt *sql.Stmt
-	stmt, err = getStmt(query)
+	stmt, err = this.getStmt(query)
 	if stmt == nil {
 		return err
 	}
@@ -120,7 +128,7 @@ func newPtrInterface(t reflect.Type) interface{} {
 		ti = new(string)
 	case reflect.Struct:
 		switch t {
-		case reflect.TypeOf(time.Time{}):
+		case TIME_TYPE:
 			ti = new(string)
 		}
 	}
@@ -213,7 +221,7 @@ func scanValue(sc sqlScanner, q *querySetter, st reflect.Value) error {
 			st.Field(c.fieldNum).SetString(string(*(q.dests[idx].(*string))))
 		case reflect.Struct:
 			switch c.typ {
-			case reflect.TypeOf(time.Time{}):
+			case TIME_TYPE:
 				timeStr := string(*(q.dests[idx].(*string)))
 				var layout string
 				if len(timeStr) == 10 {
