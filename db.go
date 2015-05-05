@@ -13,7 +13,7 @@ const (
 var dbMutex sync.RWMutex
 
 // one struct reflect to a table query setter
-var tableMap = map[reflect.Kind]*querySetter{}
+var tableMap = map[reflect.Kind]*tableSetter{}
 
 // stmt to prepare db conn
 var stmtMap = map[string]*sql.Stmt{}

@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-type querySetter struct {
+type tableSetter struct {
 	table   string
 	dests   []interface{}
 	columns []column
@@ -37,7 +37,7 @@ func (this *executor) Select(i interface{}, condition string, args ...interface{
 	if strings.HasPrefix(strings.ToUpper(condition), "SELECT") {
 		return this.query(i, condition, args...)
 	}
-	q := newQuerySetter(reflect.ValueOf(i))
+	q := newTableSetter(reflect.ValueOf(i))
 	if q == nil {
 		return this.query(i, condition, args...)
 	}
@@ -99,14 +99,14 @@ func queryList(i interface{}, rows *sql.Rows) error {
 	return convertAssignRows(i, rows)
 }
 
-func newQuerySetter(ri reflect.Value) *querySetter {
+func newTableSetter(ri reflect.Value) *tableSetter {
 	if q, ok := tableMap[ri.Kind()]; ok {
 		return q
 	}
 	if ri.Kind() != reflect.Ptr || ri.IsNil() {
 		return nil
 	}
-	q := new(querySetter)
+	q := new(tableSetter)
 	defer func() {
 		tableMap[ri.Kind()] = q
 	}()
@@ -149,9 +149,9 @@ func convertAssignRows(i interface{}, rows *sql.Rows) error {
 		return ErrNonSlice
 	}
 	typ = typ.Elem()
-	var q *querySetter
+	var q *tableSetter
 	if typ.Kind() == reflect.Struct {
-		q = newQuerySetter(reflect.New(typ))
+		q = newTableSetter(reflect.New(typ))
 		if q == nil {
 			return errors.New("q is not support")
 		}
@@ -201,7 +201,7 @@ func convertAssignRow(i interface{}, row *sql.Row) error {
 		return row.Scan(i)
 	}
 
-	q := newQuerySetter(reflect.ValueOf(i))
+	q := newTableSetter(reflect.ValueOf(i))
 	if q == nil {
 		return errors.New("nil struct")
 	}
@@ -209,7 +209,7 @@ func convertAssignRow(i interface{}, row *sql.Row) error {
 	return scanValue(row, q, st)
 }
 
-func scanValue(sc sqlScanner, q *querySetter, st reflect.Value) error {
+func scanValue(sc sqlScanner, q *tableSetter, st reflect.Value) error {
 	err := sc.Scan(q.dests...)
 	if err != nil {
 		return err

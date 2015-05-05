@@ -14,7 +14,7 @@ func (this *executor) Insert(i interface{}, args ...string) (int64, error) {
 		return 0, ErrNilMethodReceiver
 	}
 
-	q := newQuerySetter(reflect.ValueOf(i))
+	q := newTableSetter(reflect.ValueOf(i))
 	if q == nil {
 		return 0, ErrNotSupported
 	}
