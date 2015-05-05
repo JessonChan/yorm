@@ -105,6 +105,9 @@ func (this *executor) getStmt(clause string) (*sql.Stmt, error) {
 }
 
 func getStmt(clause string) (*sql.Stmt, error) {
+	if defaultExecutor == nil {
+		return nil, ErrNilSqlExecutor
+	}
 	return defaultExecutor.getStmt(clause)
 }
 
