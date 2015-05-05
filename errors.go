@@ -12,4 +12,5 @@ var (
 	ErrNotInitDefaultExecutor = errors.New("not init default sql executor")
 	ErrNilMethodReceiver      = errors.New("the method receiver is nil.")
 	ErrNilSqlExecutor         = errors.New("yorm not register the db config")
+	ErrUpdateBadSql           = errors.New("must be begin with update keyword")
 )
