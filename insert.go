@@ -10,6 +10,10 @@ import (
 
 //Insert  return lastInsertId and error if has
 func (this *executor) Insert(i interface{}, args ...string) (int64, error) {
+	if this == nil {
+		return 0, ErrNilMethodReceiver
+	}
+
 	q := newQuerySetter(reflect.ValueOf(i))
 	if q == nil {
 		return 0, ErrNotSupported

@@ -6,8 +6,13 @@ import (
 )
 
 func (this *executor) Delete(clause string, args ...interface{}) (int64, error) {
-	if !strings.HasPrefix(clause, "delete ") {
-		return 0, errors.New("delete clause must be start with delete keyword")
+
+	if this == nil {
+		return 0, ErrNilMethodReceiver
+	}
+
+	if !strings.HasPrefix(strings.ToUpper(clause), "DELETE") {
+		return 0, errors.New("must be begin with delete keyword")
 	}
 	stmt, err := this.getStmt(clause)
 	if err != nil {

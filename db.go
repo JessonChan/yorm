@@ -58,11 +58,12 @@ func RegisterWithName(dsn, name string, driver ...string) error {
 // Register register a database driver.
 func Register(dsn string, driver ...string) error {
 	err := RegisterWithName(dsn, defaultExecutorName, driver...)
-	if err == nil {
-		defaultExecutor = executorMap[defaultExecutorName]
-		return nil
+	if err != nil {
+		return err
 	}
-	return err
+	defaultExecutor = executorMap[defaultExecutorName]
+	return nil
+
 }
 
 func Using(name string) sqlExecutor {

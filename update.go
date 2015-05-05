@@ -6,8 +6,8 @@ import (
 )
 
 func (this *executor) Update(clause string, args ...interface{}) (int64, error) {
-	if !strings.HasPrefix(clause, "update ") {
-		return 0, errors.New("update clause must be start with update keyword")
+	if !strings.HasPrefix(strings.ToUpper(clause), "UPDATE") {
+		return 0, errors.New("must be begin with update keyword")
 	}
 	stmt, err := this.getStmt(clause)
 	if err != nil {
