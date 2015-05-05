@@ -41,6 +41,13 @@ func TestYorm(t *testing.T) {
 		t.Log(p2)
 		t.FailNow()
 	}
+	var p3 = ProgramLanguage{Id: p.Id}
+	SelectById(&p3)
+
+	if p3.Name != p2.Name {
+		t.Log(p3)
+		t.FailNow()
+	}
 
 	if p1.Name != p.Name {
 		t.Log(p1)

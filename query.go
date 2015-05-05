@@ -9,7 +9,6 @@ import (
 	"time"
 )
 
-
 type sqlScanner interface {
 	Scan(dest ...interface{}) error
 }
@@ -22,11 +21,29 @@ func Select(i interface{}, condition string, args ...interface{}) error {
 	return defaultExecutor.Select(i, condition, args...)
 }
 
+func SelectById(i interface{}, tableName ...string) error {
+	return defaultExecutor.SelectById(i, tableName...)
+}
+
+// 这个设计是否合理？
+func (this *executor) SelectById(i interface{}, tableName ...string) error {
+	if !reflect.ValueOf(i).IsValid() {
+		return ErrNotSupported
+	}
+	q := newTableSetter(reflect.ValueOf(i))
+	if q == nil {
+		return ErrNotSupported
+	}
+	queryClause := buildSelectSql(q, append(tableName, q.table)[0])
+	queryClause.WriteString("WHERE ID=?")
+	return this.query(i, queryClause.String(), reflect.ValueOf(i).Elem().FieldByName("Id").Int())
+}
+
 //Query do a select operation.
 // if the is a struct ,you need not write select x,y,z,you need only write the where condition ...
 func (this *executor) Select(i interface{}, condition string, args ...interface{}) error {
 	if this == nil {
-		return  ErrNilMethodReceiver
+		return ErrNilMethodReceiver
 	}
 
 	if strings.HasPrefix(strings.ToUpper(condition), "SELECT") {
@@ -36,6 +53,18 @@ func (this *executor) Select(i interface{}, condition string, args ...interface{
 	if q == nil {
 		return this.query(i, condition, args...)
 	}
+
+	queryClause := buildSelectSql(q)
+
+	if !strings.HasPrefix(strings.ToUpper(condition), "WHERE") {
+		queryClause.WriteString("WHERE ")
+	}
+	queryClause.WriteString(condition)
+
+	return this.query(i, queryClause.String(), args...)
+}
+
+func buildSelectSql(q *tableSetter, tabelName ...string) *bytes.Buffer {
 	queryClause := bytes.NewBufferString("SELECT ")
 	splitDot := ","
 	for loop := 0; loop < len(q.columns); loop++ {
@@ -49,12 +78,7 @@ func (this *executor) Select(i interface{}, condition string, args ...interface{
 	queryClause.WriteString("FROM ")
 	queryClause.WriteString(q.table)
 	queryClause.WriteString(" ")
-	if !strings.HasPrefix(strings.ToUpper(condition), "WHERE") {
-		queryClause.WriteString("WHERE ")
-	}
-	queryClause.WriteString(condition)
-
-	return this.query(i, queryClause.String(), args...)
+	return queryClause
 }
 
 //Query do a query operation.
@@ -93,7 +117,6 @@ func queryList(i interface{}, rows *sql.Rows) error {
 	}
 	return convertAssignRows(i, rows)
 }
-
 
 func newPtrInterface(t reflect.Type) interface{} {
 	k := t.Kind()
