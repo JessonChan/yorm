@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.6.23)
 # Database: yorm_test
-# Generation Time: 2015-05-06 06:05:03 +0000
+# Generation Time: 2015-05-06 16:21:30 +0000
 # ************************************************************
 
 
@@ -28,17 +28,18 @@ DROP TABLE IF EXISTS `golang_word`;
 CREATE TABLE `golang_word` (
   `aid` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `word` varchar(32) NOT NULL DEFAULT '',
+  `rate` float DEFAULT NULL,
   PRIMARY KEY (`aid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 LOCK TABLES `golang_word` WRITE;
 /*!40000 ALTER TABLE `golang_word` DISABLE KEYS */;
 
-INSERT INTO `golang_word` (`aid`, `word`)
+INSERT INTO `golang_word` (`aid`, `word`, `rate`)
 VALUES
-	(1,'go'),
-	(2,'import'),
-	(3,'main');
+	(1,'go',1.02),
+	(2,'import',0.99),
+	(3,'main',0.88);
 
 /*!40000 ALTER TABLE `golang_word` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -66,7 +67,8 @@ VALUES
 	(1,'Java','2015-04-30',1,'2015-04-30 16:39:00'),
 	(2,'C','2015-04-30',2,'2015-04-30 16:39:00'),
 	(3,'C++','2015-04-30',3,'2015-04-30 16:39:00'),
-	(4,'Go','2015-04-30',42,'2015-04-30 16:39:00');
+	(4,'Go','2015-04-30',42,'2015-04-30 16:39:00'),
+	(103,'PHP','2015-05-07',12,'2015-05-07 00:03:46');
 
 /*!40000 ALTER TABLE `program_language` ENABLE KEYS */;
 UNLOCK TABLES;
