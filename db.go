@@ -2,7 +2,6 @@ package yorm
 
 import (
 	"database/sql"
-	"reflect"
 	"sync"
 )
 
@@ -12,13 +11,11 @@ const (
 
 var dbMutex sync.RWMutex
 
-// one struct reflect to a table query setter
-var tableMap = map[reflect.Kind]*tableSetter{}
-
 // stmt to prepare db conn
 var stmtMap = map[string]*sql.Stmt{}
 
 type sqlExecutor interface {
+	SelectByPK(i interface{}, tableName ...string) error
 	Select(i interface{}, clause string, args ...interface{}) error
 	Insert(i interface{}, args ...string) (int64, error)
 	Update(clause string, args ...interface{}) (int64, error)
@@ -65,6 +62,9 @@ func Register(dsn string, driver ...string) error {
 type nilSqlExecutor struct {
 }
 
+func (n nilSqlExecutor) SelectByPK(i interface{}, args ...string) error {
+	return ErrNilSqlExecutor
+}
 func (n nilSqlExecutor) Select(i interface{}, clause string, args ...interface{}) error {
 	return ErrNilSqlExecutor
 }
