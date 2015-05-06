@@ -13,8 +13,11 @@ type tableSetter struct {
 	pkColumn *column
 }
 
+// one struct reflect to a table query setter
+var tableMap = map[reflect.Value]*tableSetter{}
+
 func newTableSetter(ri reflect.Value) (*tableSetter, error) {
-	if q, ok := tableMap[ri.Kind()]; ok {
+	if q, ok := tableMap[ri]; ok {
 		return q, nil
 	}
 	if ri.Kind() != reflect.Ptr || ri.IsNil() {
@@ -22,7 +25,7 @@ func newTableSetter(ri reflect.Value) (*tableSetter, error) {
 	}
 	q := new(tableSetter)
 	defer func() {
-		tableMap[ri.Kind()] = q
+		tableMap[ri] = q
 	}()
 	table, cs := structToTable(reflect.Indirect(ri).Interface())
 	var err error

@@ -16,11 +16,11 @@ func Select(i interface{}, condition string, args ...interface{}) error {
 }
 
 func SelectByPK(i interface{}, tableName ...string) error {
-	return defaultExecutor.SelectByPk(i, tableName...)
+	return defaultExecutor.SelectByPK(i, tableName...)
 }
 
 // select by the primary key,the table name param means you can select from other tables
-func (this *executor) SelectByPk(i interface{}, tableName ...string) error {
+func (this *executor) SelectByPK(i interface{}, tableName ...string) error {
 	if !reflect.ValueOf(i).IsValid() {
 		return ErrNotSupported
 	}
@@ -28,7 +28,7 @@ func (this *executor) SelectByPk(i interface{}, tableName ...string) error {
 	if q == nil {
 		return err
 	}
-	queryClause := buildSelectSql(q, append(tableName, q.table)[0])
+	queryClause := buildSelectSql(q, tableName...)
 	queryClause.WriteString("WHERE ")
 	queryClause.WriteString(q.pkColumn.name)
 	queryClause.WriteString("=?")
@@ -60,7 +60,7 @@ func (this *executor) Select(i interface{}, condition string, args ...interface{
 	return this.query(i, queryClause.String(), args...)
 }
 
-func buildSelectSql(q *tableSetter, tabelName ...string) *bytes.Buffer {
+func buildSelectSql(q *tableSetter, tableName ...string) *bytes.Buffer {
 	queryClause := bytes.NewBufferString("SELECT ")
 	splitDot := ","
 	for loop := 0; loop < len(q.columns); loop++ {
@@ -70,9 +70,8 @@ func buildSelectSql(q *tableSetter, tabelName ...string) *bytes.Buffer {
 		queryClause.WriteString(q.columns[loop].name)
 		queryClause.WriteString(splitDot)
 	}
-
 	queryClause.WriteString("FROM ")
-	queryClause.WriteString(q.table)
+	queryClause.WriteString(append(tableName, q.table)[0])
 	queryClause.WriteString(" ")
 	return queryClause
 }
