@@ -1,6 +1,6 @@
 # README #
 
-yorm is a simple,lightway orm lib , for mysql only now.
+yorm is a simple,lightweight orm  , for mysql only now.
 
 ### What is this yorm for? ###
 
