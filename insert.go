@@ -40,7 +40,7 @@ func (this *executor) Insert(i interface{}, args ...string) (int64, error) {
 	}
 	for _, c := range columns {
 		//todo this is auto increase field
-		v := filedByName(e, c.fieldName)
+		v := e.FieldByName(c.fieldName)
 		if strings.ToLower(c.fieldName) == "id" {
 			pk = v
 			continue
@@ -67,17 +67,6 @@ func (this *executor) Insert(i interface{}, args ...string) (int64, error) {
 		pk.SetInt(id)
 	}
 	return id, err
-}
-
-func filedByName(e reflect.Value, names ...string) reflect.Value {
-	var f reflect.Value
-	for _, name := range names {
-		f = e.FieldByName(name)
-		if f.IsValid() {
-			return f
-		}
-	}
-	return f
 }
 
 func Insert(i interface{}, args ...string) (int64, error) {
