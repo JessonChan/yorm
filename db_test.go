@@ -5,7 +5,11 @@ import (
 	"time"
 )
 
-import _ "github.com/go-sql-driver/mysql"
+import (
+	"fmt"
+
+	_ "github.com/go-sql-driver/mysql"
+)
 
 type ProgramLanguage struct {
 	Id        int64
@@ -13,6 +17,34 @@ type ProgramLanguage struct {
 	RankMonth time.Time
 	Position  int
 	Created   time.Time
+}
+type GolangWord struct {
+	Aid  int `yorm:"pk"`
+	Word string
+}
+
+type A struct {
+	Aid  int `yorm:"pk"`
+	Word string
+}
+
+func TestSelectByPk(t *testing.T) {
+	Register("root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8")
+	g := GolangWord{Aid: 1}
+	err := SelectByPk(&g)
+	if err != nil {
+		fmt.Println(err)
+		t.FailNow()
+	}
+	t.Log(g)
+
+	a := A{Aid: 2}
+	err = SelectByPk(&a, "golang_word")
+	if err != nil {
+		fmt.Println(err)
+		t.FailNow()
+	}
+	t.Log(a)
 }
 
 func TestYorm(t *testing.T) {
