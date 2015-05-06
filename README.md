@@ -1,29 +1,19 @@
 # README #
 
-This README would normally document whatever steps are necessary to get your application up and running.
+yorm is a simple,lightway orm lib , for mysql only now.
 
-### What is this repository for? ###
+### What is this yorm for? ###
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+* A simple mysql orm to crud
 
-### How do I get set up? ###
+## Tags ##
+ 
+Now support these types of tag.
+### column ###
+this tag is to alias struct name to a real column name. "Id int \`yorm:column(autoId)\`" means this field Id will name autoId in mysql column
+### pk ###
+this tag allow you to set a primary key where select/delete/update as the where clause  "Id int \`yorm:column(autoId);pk\`"
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
 
-### Contribution guidelines ###
 
-* Writing tests
-* Code review
-* Other guidelines
 
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
