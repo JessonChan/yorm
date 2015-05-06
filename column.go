@@ -78,7 +78,6 @@ func structColumns(t reflect.Type) (columns []*column) {
 			isPK:      tag.pkIsSet,
 		}
 		if c.isInner {
-
 			// recursive unwind  inner struct
 			columns = append(columns, structColumns(c.typ)...)
 		} else {
