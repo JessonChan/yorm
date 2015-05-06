@@ -20,7 +20,7 @@ func SelectByPK(i interface{}, tableName ...string) error {
 	return defaultExecutor.SelectByPk(i, tableName...)
 }
 
-// 这个设计是否合理？
+// select by the primary key,the table name param means you can select from other tables
 func (this *executor) SelectByPk(i interface{}, tableName ...string) error {
 	if !reflect.ValueOf(i).IsValid() {
 		return ErrNotSupported
