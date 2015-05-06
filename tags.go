@@ -6,6 +6,7 @@ type columnTag struct {
 	skip              bool
 	columnIsSet       bool
 	defaultValueIsSet bool
+	pkIsSet           bool
 
 	columnName   string
 	defaultValue string
@@ -45,6 +46,10 @@ func parseTag(tagStr string) (t columnTag) {
 		if tag == "-" {
 			t.skip = true
 			return
+		}
+		if tag == "pk" {
+			t.pkIsSet = true
+			continue
 		}
 		if !t.columnIsSet {
 			t.columnName, t.columnIsSet = parseBracketsValue(tag, "column")
