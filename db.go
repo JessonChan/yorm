@@ -86,9 +86,7 @@ func Using(name string) sqlExecutor {
 }
 
 func (this *executor) getStmt(clause string) (*sql.Stmt, error) {
-	if this == nil {
-		return nil, ErrNotInitDefaultExecutor
-	}
+
 	var err error
 	clause, err = validClause(clause)
 	if err != nil {
