@@ -36,6 +36,8 @@ code is here:
 
 <pre>
 <code>
+
+
 package main
 
 import (
@@ -60,12 +62,14 @@ type ProgramLanguage struct {
 }
 
 var engine *xorm.Engine
+var o orm.Ormer
 
 func init() {
 	orm.RegisterDataBase("default", "mysql", db)
 	orm.RegisterModel(new(ProgramLanguage))
 	yorm.Register(db)
 	engine, _ = xorm.NewEngine("mysql", db)
+	o = orm.NewOrm()
 }
 
 func main() {
@@ -76,7 +80,6 @@ func main() {
 }
 
 func beegoOrm() {
-	o := orm.NewOrm()
 	p := ProgramLanguage{Id: 1}
 	o.Read(&p)
 	if p.Name == "" {
@@ -97,6 +100,6 @@ func xomrTest() {
 		panic(p)
 	}
 }
+
 </code>
 </pre>
-
