@@ -28,7 +28,7 @@ func (this *executor) Insert(i interface{}, args ...string) (int64, error) {
 	e := reflect.ValueOf(i).Elem()
 	var pk reflect.Value
 	dests := []interface{}{}
-	var columns []column
+	var columns []*column
 	if len(args) == 0 {
 		columns = q.columns
 	} else {

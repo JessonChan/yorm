@@ -39,7 +39,7 @@ func newTableSetter(ri reflect.Value) (*tableSetter, error) {
 	return q, nil
 }
 
-func findPkColumn(cs []column) (*column, error) {
+func findPkColumn(cs []*column) (*column, error) {
 	var c *column
 	var idColumn *column
 	isPk := false
