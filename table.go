@@ -48,7 +48,7 @@ func findPkColumn(cs []*column) (*column, error) {
 		if strings.ToLower(v.name) == "id" {
 			idColumn = v
 		}
-		if v.isPk {
+		if v.isPK {
 			if isPk {
 				return c, ErrDuplicatePkColumn
 			}

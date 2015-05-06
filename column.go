@@ -18,7 +18,7 @@ type column struct {
 	name      string
 	typ       reflect.Type
 	isInner   bool //inner struct ?
-	isPk      bool
+	isPK      bool
 }
 
 var structColumnCache = map[reflect.Type][]*column{}
@@ -75,7 +75,7 @@ func structColumns(t reflect.Type) (columns []*column) {
 			name:      name,
 			typ:       fieldType,
 			isInner:   isInner,
-			isPk:      tag.pkIsSet,
+			isPK:      tag.pkIsSet,
 		}
 		if c.isInner {
 
