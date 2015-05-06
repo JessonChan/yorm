@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.6.23)
 # Database: yorm_test
-# Generation Time: 2015-04-30 09:32:27 +0000
+# Generation Time: 2015-05-06 06:05:03 +0000
 # ************************************************************
 
 
@@ -18,6 +18,30 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+
+# Dump of table golang_word
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `golang_word`;
+
+CREATE TABLE `golang_word` (
+  `aid` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `word` varchar(32) NOT NULL DEFAULT '',
+  PRIMARY KEY (`aid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+LOCK TABLES `golang_word` WRITE;
+/*!40000 ALTER TABLE `golang_word` DISABLE KEYS */;
+
+INSERT INTO `golang_word` (`aid`, `word`)
+VALUES
+	(1,'go'),
+	(2,'import'),
+	(3,'main');
+
+/*!40000 ALTER TABLE `golang_word` ENABLE KEYS */;
+UNLOCK TABLES;
 
 
 # Dump of table program_language
