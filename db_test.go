@@ -5,11 +5,7 @@ import (
 	"time"
 )
 
-import (
-	"fmt"
-
-	_ "github.com/go-sql-driver/mysql"
-)
+import _ "github.com/go-sql-driver/mysql"
 
 type ProgramLanguage struct {
 	Id        int64
@@ -28,25 +24,6 @@ type A struct {
 	Aid  int `yorm:"pk"`
 	Word string
 	Rate float64
-}
-
-func TestSelectByPk(t *testing.T) {
-	Register("root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8")
-	g := GolangWord{Aid: 1}
-	err := SelectByPK(&g)
-	if err != nil {
-		fmt.Println(err)
-		t.FailNow()
-	}
-	t.Log(g)
-
-	a := A{Aid: 2}
-	err = SelectByPK(&a, "golang_word")
-	if err != nil {
-		fmt.Println(err)
-		t.FailNow()
-	}
-	t.Log(a)
 }
 
 func TestYorm(t *testing.T) {
@@ -104,3 +81,24 @@ func TestYorm(t *testing.T) {
 		t.FailNow()
 	}
 }
+
+func TestSelectByPk(t *testing.T) {
+	Register("root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8")
+	g := GolangWord{Aid: 1}
+	err := SelectByPK(&g)
+	if err != nil {
+		t.Log(err)
+		t.FailNow()
+	}
+	t.Log(g)
+
+	a := A{Aid: 2}
+	err = SelectByPK(&a, "golang_word")
+	if err != nil {
+		t.Log(err)
+		t.FailNow()
+	}
+	t.Log(a)
+}
+
+

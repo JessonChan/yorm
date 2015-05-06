@@ -26,37 +26,37 @@ func TestStructToTable_3(t *testing.T) {
 	}
 	testStructToTable(t, A{}, "a", 2)
 }
-func TestStructToTable_4(t *testing.T) {
-	type A struct {
-		Id   int64
-		Name string
-	}
-	type B struct {
-		A
-	}
-	type C struct {
-		A `yorm:"-"`
-		B `yorm:"column(test)"`
-	}
-	type D struct {
-		B
-		Log string `yorm:"column(log2)"`
-	}
-	testStructToTable(t, B{}, "b", 2)
-	testStructToTable(t, C{}, "c", 1)
-	testStructToTable(t, D{}, "d", 3)
-	_, cs := structToTable(D{})
-	for _, v := range cs {
-		t.Log(v.name)
-		for _, v1 := range []string{"id", "name", "log2"} {
-			if v.name == v1 {
-				goto S
-			}
-		}
-		t.Fail()
-	S:
-	}
-}
+//func TestStructToTable_4(t *testing.T) {
+//	type A struct {
+//		Id   int64
+//		Name string
+//	}
+//	type B struct {
+//		A
+//	}
+//	type C struct {
+//		A `yorm:"-"`
+//		B `yorm:"column(test)"`
+//	}
+//	type D struct {
+//		B
+//		Log string `yorm:"column(log2)"`
+//	}
+//	testStructToTable(t, B{}, "b", 2)
+//	testStructToTable(t, C{}, "c", 1)
+//	testStructToTable(t, D{}, "d", 3)
+//	_, cs := structToTable(D{})
+//	for _, v := range cs {
+//		t.Log(v.name)
+//		for _, v1 := range []string{"id", "name", "log2"} {
+//			if v.name == v1 {
+//				goto S
+//			}
+//		}
+//		t.Fail()
+//	S:
+//	}
+//}
 
 func testStructToTable(t *testing.T, i interface{}, name string, numField int) {
 	n, cs := structToTable(i)
