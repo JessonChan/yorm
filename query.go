@@ -3,7 +3,6 @@ package yorm
 import (
 	"bytes"
 	"database/sql"
-	"errors"
 	"reflect"
 	"strings"
 	"time"
@@ -12,10 +11,6 @@ import (
 type sqlScanner interface {
 	Scan(dest ...interface{}) error
 }
-
-var (
-	TIME_TYPE = reflect.TypeOf(time.Time{})
-)
 
 func Select(i interface{}, condition string, args ...interface{}) error {
 	return defaultExecutor.Select(i, condition, args...)
@@ -30,9 +25,9 @@ func (this *executor) SelectById(i interface{}, tableName ...string) error {
 	if !reflect.ValueOf(i).IsValid() {
 		return ErrNotSupported
 	}
-	q := newTableSetter(reflect.ValueOf(i))
+	q, err := newTableSetter(reflect.ValueOf(i))
 	if q == nil {
-		return ErrNotSupported
+		return err
 	}
 	queryClause := buildSelectSql(q, append(tableName, q.table)[0])
 	queryClause.WriteString("WHERE ID=?")
@@ -49,7 +44,7 @@ func (this *executor) Select(i interface{}, condition string, args ...interface{
 	if strings.HasPrefix(strings.ToUpper(condition), "SELECT") {
 		return this.query(i, condition, args...)
 	}
-	q := newTableSetter(reflect.ValueOf(i))
+	q, _ := newTableSetter(reflect.ValueOf(i))
 	if q == nil {
 		return this.query(i, condition, args...)
 	}
@@ -118,25 +113,6 @@ func queryList(i interface{}, rows *sql.Rows) error {
 	return convertAssignRows(i, rows)
 }
 
-func newPtrInterface(t reflect.Type) interface{} {
-	k := t.Kind()
-	var ti interface{}
-	switch k {
-	case reflect.Int:
-		ti = new(int)
-	case reflect.Int64:
-		ti = new(int64)
-	case reflect.String:
-		ti = new(string)
-	case reflect.Struct:
-		switch t {
-		case TIME_TYPE:
-			ti = new(string)
-		}
-	}
-	return ti
-}
-
 func convertAssignRows(i interface{}, rows *sql.Rows) error {
 	typ := reflect.TypeOf(i)
 	if typ.Kind() != reflect.Ptr {
@@ -148,10 +124,11 @@ func convertAssignRows(i interface{}, rows *sql.Rows) error {
 	}
 	typ = typ.Elem()
 	var q *tableSetter
+	var err error
 	if typ.Kind() == reflect.Struct {
-		q = newTableSetter(reflect.New(typ))
+		q, err = newTableSetter(reflect.New(typ))
 		if q == nil {
-			return errors.New("q is not support")
+			return err
 		}
 	}
 	size := 0
@@ -199,9 +176,9 @@ func convertAssignRow(i interface{}, row *sql.Row) error {
 		return row.Scan(i)
 	}
 
-	q := newTableSetter(reflect.ValueOf(i))
+	q, err := newTableSetter(reflect.ValueOf(i))
 	if q == nil {
-		return errors.New("nil struct")
+		return err
 	}
 	st := reflect.ValueOf(i).Elem()
 	return scanValue(row, q, st)

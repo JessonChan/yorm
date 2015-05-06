@@ -13,4 +13,6 @@ var (
 	ErrNilMethodReceiver      = errors.New("the method receiver is nil.")
 	ErrNilSqlExecutor         = errors.New("yorm not register the db config")
 	ErrUpdateBadSql           = errors.New("must be begin with update keyword")
+	ErrDuplicatePkColumn      = errors.New("duplicate pk column find")
+	ErrNonePkColumn           = errors.New("none pk column find")
 )

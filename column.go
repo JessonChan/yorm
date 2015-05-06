@@ -18,17 +18,12 @@ type column struct {
 	name      string
 	typ       reflect.Type
 	isInner   bool //inner struct ?
+	isPk      bool
 }
 
-//table represents a single table.
-type table struct {
-	name    string
-	columns []column
-}
+var structColumnCache = map[reflect.Type][]*column{}
 
-var structColumnCache = map[reflect.Type][]column{}
-
-func structToTable(i interface{}) (tableName string, columns []column) {
+func structToTable(i interface{}) (tableName string, columns []*column) {
 	typ := reflect.TypeOf(i)
 	if typ.Kind() != reflect.Struct {
 		return
@@ -36,7 +31,7 @@ func structToTable(i interface{}) (tableName string, columns []column) {
 	return camelToUnderscore(typ.Name()), structColumns(typ)
 }
 
-func structColumns(t reflect.Type) (columns []column) {
+func structColumns(t reflect.Type) (columns []*column) {
 	if t.Kind() != reflect.Struct {
 		return
 	}
@@ -74,12 +69,13 @@ func structColumns(t reflect.Type) (columns []column) {
 
 			}
 		}
-		c := column{
+		c := &column{
 			fieldNum:  i,
 			fieldName: field.Name,
 			name:      name,
 			typ:       fieldType,
 			isInner:   isInner,
+			isPk:      tag.pkIsSet,
 		}
 		if c.isInner {
 
