@@ -10,12 +10,10 @@ const (
 	DriverMySQL = "mysql"
 )
 
-// main db to operate ,maybe will support multi dbs(read/write ...)
-var sqlDb *sql.DB
 var dbMutex sync.RWMutex
 
 // one struct reflect to a table query setter
-var tableMap = map[reflect.Kind]*querySetter{}
+var tableMap = map[reflect.Kind]*tableSetter{}
 
 // stmt to prepare db conn
 var stmtMap = map[string]*sql.Stmt{}
@@ -58,16 +56,33 @@ func RegisterWithName(dsn, name string, driver ...string) error {
 // Register register a database driver.
 func Register(dsn string, driver ...string) error {
 	err := RegisterWithName(dsn, defaultExecutorName, driver...)
-	if err != nil {
-		return err
+	if err == nil {
+		defaultExecutor = executorMap[defaultExecutorName]
 	}
-	defaultExecutor = executorMap[defaultExecutorName]
-	return nil
+	return err
+}
 
+type nilSqlExecutor struct {
+}
+
+func (n nilSqlExecutor) Select(i interface{}, clause string, args ...interface{}) error {
+	return ErrNilSqlExecutor
+}
+func (n nilSqlExecutor) Insert(i interface{}, args ...string) (int64, error) {
+	return 0, ErrNilSqlExecutor
+}
+func (n nilSqlExecutor) Update(clause string, args ...interface{}) (int64, error) {
+	return 0, ErrNilSqlExecutor
+}
+func (n nilSqlExecutor) Delete(clause string, args ...interface{}) (int64, error) {
+	return 0, ErrNilSqlExecutor
 }
 
 func Using(name string) sqlExecutor {
-	return executorMap[name]
+	if e, ok := executorMap[name]; ok {
+		return e
+	}
+	return nilSqlExecutor{}
 }
 
 func (this *executor) getStmt(clause string) (*sql.Stmt, error) {
@@ -90,6 +105,9 @@ func (this *executor) getStmt(clause string) (*sql.Stmt, error) {
 }
 
 func getStmt(clause string) (*sql.Stmt, error) {
+	if defaultExecutor == nil {
+		return nil, ErrNilSqlExecutor
+	}
 	return defaultExecutor.getStmt(clause)
 }
 

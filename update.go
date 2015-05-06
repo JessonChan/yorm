@@ -1,13 +1,11 @@
 package yorm
 
-import (
-	"errors"
-	"strings"
-)
+import "strings"
+
 
 func (this *executor) Update(clause string, args ...interface{}) (int64, error) {
 	if !strings.HasPrefix(strings.ToUpper(clause), "UPDATE") {
-		return 0, errors.New("must be begin with update keyword")
+		return 0, ErrUpdateBadSql
 	}
 	stmt, err := this.getStmt(clause)
 	if err != nil {
