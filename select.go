@@ -16,7 +16,7 @@ func Select(i interface{}, condition string, args ...interface{}) error {
 	return defaultExecutor.Select(i, condition, args...)
 }
 
-func SelectByPk(i interface{}, tableName ...string) error {
+func SelectByPK(i interface{}, tableName ...string) error {
 	return defaultExecutor.SelectByPk(i, tableName...)
 }
 

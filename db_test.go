@@ -31,15 +31,15 @@ type A struct {
 func TestSelectByPk(t *testing.T) {
 	Register("root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8")
 	g := GolangWord{Aid: 1}
-	err := SelectByPk(&g)
+	err := SelectByPK(&g)
 	if err != nil {
 		fmt.Println(err)
 		t.FailNow()
 	}
 	t.Log(g)
 
-	a := A{Aid: 2}
-	err = SelectByPk(&a, "golang_word")
+	a := A{Aid:2 }
+	err = SelectByPK(&a, "golang_word")
 	if err != nil {
 		fmt.Println(err)
 		t.FailNow()
@@ -74,7 +74,7 @@ func TestYorm(t *testing.T) {
 		t.FailNow()
 	}
 	var p3 = ProgramLanguage{Id: p.Id}
-	SelectByPk(&p3)
+	SelectByPK(&p3)
 	t.Log(p3)
 
 	if p3.Name != p2.Name {
