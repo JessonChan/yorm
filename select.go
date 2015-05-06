@@ -16,12 +16,12 @@ func Select(i interface{}, condition string, args ...interface{}) error {
 	return defaultExecutor.Select(i, condition, args...)
 }
 
-func SelectById(i interface{}, tableName ...string) error {
-	return defaultExecutor.SelectById(i, tableName...)
+func SelectByPk(i interface{}, tableName ...string) error {
+	return defaultExecutor.SelectByPk(i, tableName...)
 }
 
 // 这个设计是否合理？
-func (this *executor) SelectById(i interface{}, tableName ...string) error {
+func (this *executor) SelectByPk(i interface{}, tableName ...string) error {
 	if !reflect.ValueOf(i).IsValid() {
 		return ErrNotSupported
 	}
@@ -30,8 +30,10 @@ func (this *executor) SelectById(i interface{}, tableName ...string) error {
 		return err
 	}
 	queryClause := buildSelectSql(q, append(tableName, q.table)[0])
-	queryClause.WriteString("WHERE ID=?")
-	return this.query(i, queryClause.String(), reflect.ValueOf(i).Elem().FieldByName("Id").Int())
+	queryClause.WriteString("WHERE ")
+	queryClause.WriteString(q.pkColumn.name)
+	queryClause.WriteString("=?")
+	return this.query(i, queryClause.String(), reflect.ValueOf(i).Elem().FieldByName(q.pkColumn.fieldName).Int())
 }
 
 //Query do a select operation.
