@@ -79,6 +79,10 @@ func newPtrInterface(t reflect.Type) interface{} {
 		ti = new(int64)
 	case reflect.String:
 		ti = new(string)
+	case reflect.Float32:
+		ti = new(float32)
+	case reflect.Float64:
+		ti = new(float64)
 	case reflect.Struct:
 		switch t {
 		case TIME_TYPE:
@@ -86,4 +90,44 @@ func newPtrInterface(t reflect.Type) interface{} {
 		}
 	}
 	return ti
+}
+
+func scanValue(sc sqlScanner, q *tableSetter, st reflect.Value) error {
+	err := sc.Scan(q.dests...)
+	if err != nil {
+		return err
+	}
+	for idx, c := range q.columns {
+		// different assign func here
+		switch c.typ.Kind() {
+		case reflect.Int:
+			st.Field(c.fieldNum).SetInt(int64(*(q.dests[idx].(*int))))
+		case reflect.Int64:
+			st.Field(c.fieldNum).SetInt(int64(*(q.dests[idx].(*int64))))
+		case reflect.String:
+			st.Field(c.fieldNum).SetString(string(*(q.dests[idx].(*string))))
+		case reflect.Float32:
+			st.Field(c.fieldNum).SetFloat(float64(*(q.dests[idx].(*float32))))
+		case reflect.Float64:
+			st.Field(c.fieldNum).SetFloat(float64(*(q.dests[idx].(*float64))))
+		case reflect.Struct:
+			switch c.typ {
+			case TIME_TYPE:
+				timeStr := string(*(q.dests[idx].(*string)))
+				var layout string
+				if len(timeStr) == 10 {
+					layout = "2006-01-02"
+				}
+				if len(timeStr) == 19 {
+					layout = "2006-01-02 15:04:05"
+				}
+				timeTime, err := time.ParseInLocation(layout, timeStr, time.Local)
+				if timeTime.IsZero() {
+					return err
+				}
+				st.Field(c.fieldNum).Set(reflect.ValueOf(timeTime))
+			}
+		}
+	}
+	return nil
 }

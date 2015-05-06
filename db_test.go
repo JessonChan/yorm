@@ -21,11 +21,13 @@ type ProgramLanguage struct {
 type GolangWord struct {
 	Aid  int `yorm:"pk"`
 	Word string
+	Rate float32
 }
 
 type A struct {
 	Aid  int `yorm:"pk"`
 	Word string
+	Rate float64
 }
 
 func TestSelectByPk(t *testing.T) {
@@ -38,7 +40,7 @@ func TestSelectByPk(t *testing.T) {
 	}
 	t.Log(g)
 
-	a := A{Aid:2 }
+	a := A{Aid: 2}
 	err = SelectByPK(&a, "golang_word")
 	if err != nil {
 		fmt.Println(err)
