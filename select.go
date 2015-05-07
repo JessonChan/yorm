@@ -33,7 +33,7 @@ func (ex *executor) SelectByPK(i interface{}, tableName ...string) error {
 	queryClause := buildSelectSql(q, tableName...)
 	queryClause.WriteString("WHERE ")
 	queryClause.WriteString(q.pkColumn.name)
-	queryClause.WriteString("=?")
+	queryClause.WriteString("=? LIMIT 1")
 	return ex.query(i, queryClause.String(), reflect.ValueOf(i).Elem().FieldByName(q.pkColumn.fieldName).Int())
 }
 
