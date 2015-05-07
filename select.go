@@ -64,6 +64,14 @@ func (ex *executor) Select(i interface{}, condition string, args ...interface{})
 
 func buildSelectSql(q *tableSetter, tableName ...string) *bytes.Buffer {
 	queryClause := bytes.NewBufferString("SELECT ")
+	queryClause.WriteString(buildFullColumnSql(q))
+	queryClause.WriteString("FROM ")
+	queryClause.WriteString(append(tableName, q.table)[0])
+	queryClause.WriteString(" ")
+	return queryClause
+}
+func buildFullColumnSql(q *tableSetter) string {
+	queryClause := bytes.NewBufferString("")
 	splitDot := ","
 	for loop := 0; loop < len(q.columns); loop++ {
 		if loop == len(q.columns)-1 {
@@ -72,10 +80,7 @@ func buildSelectSql(q *tableSetter, tableName ...string) *bytes.Buffer {
 		queryClause.WriteString(q.columns[loop].name)
 		queryClause.WriteString(splitDot)
 	}
-	queryClause.WriteString("FROM ")
-	queryClause.WriteString(append(tableName, q.table)[0])
-	queryClause.WriteString(" ")
-	return queryClause
+	return queryClause.String()
 }
 
 //Query do a query operation.
