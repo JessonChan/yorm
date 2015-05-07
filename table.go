@@ -13,8 +13,13 @@ type tableSetter struct {
 	pkColumn *column
 }
 
-// one struct reflect to a table query setter
-var tableMap = map[reflect.Value]*tableSetter{}
+var (
+	//TimeType time's reflect type.
+	TimeType = reflect.TypeOf(time.Time{})
+
+	// one struct reflect to a table query setter
+	tableMap = map[reflect.Value]*tableSetter{}
+)
 
 func newTableSetter(ri reflect.Value) (*tableSetter, error) {
 	if q, ok := tableMap[ri]; ok {
@@ -68,10 +73,6 @@ func findPkColumn(cs []*column) (*column, error) {
 	return c, nil
 }
 
-var (
-	TIME_TYPE = reflect.TypeOf(time.Time{})
-)
-
 func newPtrInterface(t reflect.Type) interface{} {
 	k := t.Kind()
 	var ti interface{}
@@ -88,7 +89,7 @@ func newPtrInterface(t reflect.Type) interface{} {
 		ti = new(float64)
 	case reflect.Struct:
 		switch t {
-		case TIME_TYPE:
+		case TimeType:
 			ti = new(string)
 		}
 	}
@@ -115,7 +116,7 @@ func scanValue(sc sqlScanner, q *tableSetter, st reflect.Value) error {
 			st.Field(c.fieldNum).SetFloat(float64(*(q.dests[idx].(*float64))))
 		case reflect.Struct:
 			switch c.typ {
-			case TIME_TYPE:
+			case TimeType:
 				timeStr := string(*(q.dests[idx].(*string)))
 				var layout string
 				if len(timeStr) == 10 {
