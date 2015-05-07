@@ -22,8 +22,11 @@ type GolangWord struct {
 
 type A struct {
 	Aid  int `yorm:"pk"`
+	G2   GolangWord
+	P1   ProgramLanguage
 	Word string
 	Rate float64
+	GW   GolangWord
 }
 
 func TestYorm(t *testing.T) {
@@ -100,5 +103,3 @@ func TestSelectByPk(t *testing.T) {
 	}
 	t.Log(a)
 }
-
-
