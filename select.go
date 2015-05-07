@@ -11,16 +11,18 @@ type sqlScanner interface {
 	Scan(dest ...interface{}) error
 }
 
+//Select query records(s) from a table.
 func Select(i interface{}, condition string, args ...interface{}) error {
 	return defaultExecutor.Select(i, condition, args...)
 }
 
+//SelectByPK select by pk.
 func SelectByPK(i interface{}, tableName ...string) error {
 	return defaultExecutor.SelectByPK(i, tableName...)
 }
 
 // select by the primary key,the table name param means you can select from other tables
-func (this *executor) SelectByPK(i interface{}, tableName ...string) error {
+func (ex *executor) SelectByPK(i interface{}, tableName ...string) error {
 	if !reflect.ValueOf(i).IsValid() {
 		return ErrNotSupported
 	}
@@ -32,22 +34,22 @@ func (this *executor) SelectByPK(i interface{}, tableName ...string) error {
 	queryClause.WriteString("WHERE ")
 	queryClause.WriteString(q.pkColumn.name)
 	queryClause.WriteString("=?")
-	return this.query(i, queryClause.String(), reflect.ValueOf(i).Elem().FieldByName(q.pkColumn.fieldName).Int())
+	return ex.query(i, queryClause.String(), reflect.ValueOf(i).Elem().FieldByName(q.pkColumn.fieldName).Int())
 }
 
 //Query do a select operation.
 // if the is a struct ,you need not write select x,y,z,you need only write the where condition ...
-func (this *executor) Select(i interface{}, condition string, args ...interface{}) error {
-	if this == nil {
+func (ex *executor) Select(i interface{}, condition string, args ...interface{}) error {
+	if ex == nil {
 		return ErrNilMethodReceiver
 	}
 
 	if strings.HasPrefix(strings.ToUpper(condition), "SELECT") {
-		return this.query(i, condition, args...)
+		return ex.query(i, condition, args...)
 	}
 	q, _ := newTableSetter(reflect.ValueOf(i))
 	if q == nil {
-		return this.query(i, condition, args...)
+		return ex.query(i, condition, args...)
 	}
 
 	queryClause := buildSelectSql(q)
@@ -57,7 +59,7 @@ func (this *executor) Select(i interface{}, condition string, args ...interface{
 	}
 	queryClause.WriteString(condition)
 
-	return this.query(i, queryClause.String(), args...)
+	return ex.query(i, queryClause.String(), args...)
 }
 
 func buildSelectSql(q *tableSetter, tableName ...string) *bytes.Buffer {
@@ -77,7 +79,7 @@ func buildSelectSql(q *tableSetter, tableName ...string) *bytes.Buffer {
 }
 
 //Query do a query operation.
-func (this *executor) query(i interface{}, query string, args ...interface{}) error {
+func (ex *executor) query(i interface{}, query string, args ...interface{}) error {
 	typ := reflect.TypeOf(i)
 	if typ.Kind() != reflect.Ptr {
 		return ErrNonPtr
@@ -85,7 +87,7 @@ func (this *executor) query(i interface{}, query string, args ...interface{}) er
 	typ = typ.Elem()
 	var err error
 	var stmt *sql.Stmt
-	stmt, err = this.getStmt(query)
+	stmt, err = ex.getStmt(query)
 	if stmt == nil {
 		return err
 	}

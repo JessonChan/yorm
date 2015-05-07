@@ -11,6 +11,8 @@ const (
 	FieldName
 )
 
+var structColumnCache = map[reflect.Type][]*column{}
+
 // A column  represents a single column on a db record
 type column struct {
 	fieldNum  int
@@ -20,8 +22,6 @@ type column struct {
 	isInner   bool //inner struct ?
 	isPK      bool
 }
-
-var structColumnCache = map[reflect.Type][]*column{}
 
 func structToTable(i interface{}) (tableName string, columns []*column) {
 	typ := reflect.TypeOf(i)

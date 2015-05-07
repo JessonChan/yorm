@@ -6,13 +6,19 @@ import (
 )
 
 const (
-	DriverMySQL = "mysql"
+
+	//DriverMySQL driver for mysql
+	DriverMySQL         = "mysql"
+	defaultExecutorName = "default"
 )
 
-var dbMutex sync.RWMutex
-
-// stmt to prepare db conn
-var stmtMap = map[string]*sql.Stmt{}
+var (
+	dbMutex         sync.RWMutex
+	defaultExecutor *executor
+	// stmt to prepare db conn
+	stmtMap     = map[string]*sql.Stmt{}
+	executorMap = map[string]*executor{}
+)
 
 type sqlExecutor interface {
 	SelectByPK(i interface{}, tableName ...string) error
@@ -26,12 +32,7 @@ type executor struct {
 	*sql.DB
 }
 
-var defaultExecutor *executor
-
-var executorMap = map[string]*executor{}
-
-const defaultExecutorName = "default"
-
+//RegisterWithName register a database dirver with specific name.
 func RegisterWithName(dsn, name string, driver ...string) error {
 	if executorMap[name] != nil {
 		return nil
@@ -50,7 +51,7 @@ func RegisterWithName(dsn, name string, driver ...string) error {
 	return nil
 }
 
-// Register register a database driver.
+//Register register a database driver.
 func Register(dsn string, driver ...string) error {
 	err := RegisterWithName(dsn, defaultExecutorName, driver...)
 	if err == nil {
@@ -78,6 +79,7 @@ func (n nilSqlExecutor) Delete(clause string, args ...interface{}) (int64, error
 	return 0, ErrNilSqlExecutor
 }
 
+//Using using the executor with name, if not exist  nilSqlExecutor instead.
 func Using(name string) sqlExecutor {
 	if e, ok := executorMap[name]; ok {
 		return e
@@ -85,7 +87,7 @@ func Using(name string) sqlExecutor {
 	return nilSqlExecutor{}
 }
 
-func (this *executor) getStmt(clause string) (*sql.Stmt, error) {
+func (ex *executor) getStmt(clause string) (*sql.Stmt, error) {
 
 	var err error
 	clause, err = validClause(clause)
@@ -94,7 +96,7 @@ func (this *executor) getStmt(clause string) (*sql.Stmt, error) {
 	}
 	stmt := stmtMap[clause]
 	if stmt == nil {
-		stmt, err = this.Prepare(clause)
+		stmt, err = ex.Prepare(clause)
 		if stmt != nil {
 			stmtMap[clause] = stmt
 		}

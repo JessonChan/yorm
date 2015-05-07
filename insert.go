@@ -9,7 +9,7 @@ import (
 )
 
 //Insert  return lastInsertId and error if has
-func (this *executor) Insert(i interface{}, args ...string) (int64, error) {
+func (ex *executor) Insert(i interface{}, args ...string) (int64, error) {
 
 	q, err := newTableSetter(reflect.ValueOf(i))
 	if q == nil {
@@ -21,13 +21,17 @@ func (this *executor) Insert(i interface{}, args ...string) (int64, error) {
 	clause.WriteString(q.table)
 	clause.WriteString(" SET ")
 
-	fs := ""
-	e := reflect.ValueOf(i).Elem()
-	var pk reflect.Value
+	fs := &bytes.Buffer{}
 	dests := []interface{}{}
+
+	e := reflect.ValueOf(i).Elem()
+
+	var pk reflect.Value
 	var columns []*column
+
 	if len(args) == 0 {
 		columns = q.columns
+
 	} else {
 		for _, arg := range args {
 			arg = strings.ToLower(arg)
@@ -45,14 +49,15 @@ func (this *executor) Insert(i interface{}, args ...string) (int64, error) {
 			pk = v
 			continue
 		}
-		fs += fmt.Sprintf(",%v=?", c.name)
+
+		fs.WriteString("," + c.name + "=?")
 		dests = append(dests, fmt.Sprintf("%v", v.Interface()))
 	}
-	if fs == "" {
+	if fs.Len() == 0 {
 		return 0, errors.New("no filed to insert")
 	}
 
-	clause.WriteString(fs[1:])
+	clause.Write(fs.Bytes()[1:])
 
 	stmt, err := getStmt(clause.String())
 	if err != nil {
@@ -69,6 +74,7 @@ func (this *executor) Insert(i interface{}, args ...string) (int64, error) {
 	return id, err
 }
 
+//Insert insert a record.
 func Insert(i interface{}, args ...string) (int64, error) {
 	return defaultExecutor.Insert(i, args...)
 }

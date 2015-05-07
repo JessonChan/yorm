@@ -2,12 +2,11 @@ package yorm
 
 import "strings"
 
-
-func (this *executor) Update(clause string, args ...interface{}) (int64, error) {
+func (ex *executor) Update(clause string, args ...interface{}) (int64, error) {
 	if !strings.HasPrefix(strings.ToUpper(clause), "UPDATE") {
 		return 0, ErrUpdateBadSql
 	}
-	stmt, err := this.getStmt(clause)
+	stmt, err := ex.getStmt(clause)
 	if err != nil {
 		return 0, err
 	}
@@ -19,6 +18,7 @@ func (this *executor) Update(clause string, args ...interface{}) (int64, error) 
 	return id, err
 }
 
+//Update update record(s)
 func Update(clause string, args ...interface{}) (int64, error) {
 	return defaultExecutor.Update(clause, args...)
 }
