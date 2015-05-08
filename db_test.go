@@ -9,9 +9,9 @@ import _ "github.com/go-sql-driver/mysql"
 
 type ProgramLanguage struct {
 	Id        int64
+	Position  int
 	Name      string
 	RankMonth time.Time
-	Position  int
 	Created   time.Time
 }
 type GolangWord struct {

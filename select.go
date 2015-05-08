@@ -47,11 +47,11 @@ func (ex *executor) Select(i interface{}, condition string, args ...interface{})
 	if strings.HasPrefix(strings.ToUpper(condition), "SELECT") {
 		return ex.query(i, condition, args...)
 	}
+
 	q, _ := newTableSetter(reflect.ValueOf(i))
 	if q == nil {
-		return ex.query(i, condition, args...)
+		return ErrNotSupported
 	}
-
 	queryClause := buildSelectSql(q)
 
 	if !strings.HasPrefix(strings.ToUpper(condition), "WHERE") {
@@ -71,6 +71,9 @@ func buildSelectSql(q *tableSetter, tableName ...string) *bytes.Buffer {
 	return queryClause
 }
 func buildFullColumnSql(q *tableSetter) string {
+	if q == nil {
+		return ""
+	}
 	queryClause := bytes.NewBufferString("")
 	splitDot := ","
 	for loop := 0; loop < len(q.columns); loop++ {
@@ -90,6 +93,12 @@ func (ex *executor) query(i interface{}, query string, args ...interface{}) erro
 		return ErrNonPtr
 	}
 	typ = typ.Elem()
+
+	if strings.Contains(query, "*") {
+		q, _ := newTableSetter(reflect.ValueOf(i))
+		query = strings.Replace(query, "*", buildFullColumnSql(q), -1)
+	}
+
 	var err error
 	var stmt *sql.Stmt
 	stmt, err = ex.getStmt(query)
