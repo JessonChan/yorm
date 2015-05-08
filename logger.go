@@ -8,7 +8,7 @@ type loggerInterface interface {
 	Error(string, ...interface{})
 }
 
-var logger loggerInterface = yormLogger{}
+var logger loggerInterface = &yormLogger{}
 var loggerLevel = ""
 
 var (
