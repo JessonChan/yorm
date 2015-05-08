@@ -33,13 +33,21 @@ type executor struct {
 }
 
 //RegisterWithName register a database dirver with specific name.
-func RegisterWithName(dsn, name string, driver ...string) error {
+func RegisterWithName(dsn, name string, driver ...string) (err error) {
+	defer func() {
+		logger.Debug("finish register " + name)
+		if err != nil {
+			logger.Error("register failed %v", err)
+		}
+	}()
+	logger.Debug("begin register " + name)
 	if executorMap[name] != nil {
 		return nil
 	}
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
-	sqlDb, err := sql.Open(append(driver, DriverMySQL)[0], dsn)
+	var sqlDb *sql.DB
+	sqlDb, err = sql.Open(append(driver, DriverMySQL)[0], dsn)
 	if sqlDb == nil {
 		return err
 	}
