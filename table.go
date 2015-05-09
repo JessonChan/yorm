@@ -25,7 +25,10 @@ func newTableSetter(ri reflect.Value) (*tableSetter, error) {
 	if q, ok := tableMap[ri]; ok {
 		return q, nil
 	}
-	if ri.Kind() != reflect.Ptr || ri.IsNil() {
+	if ri.Kind() != reflect.Ptr {
+		return nil, ErrNonPtr
+	}
+	if ri.IsNil() {
 		return nil, ErrNotSupported
 	}
 	q := new(tableSetter)
