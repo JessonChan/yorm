@@ -7,6 +7,7 @@ type columnTag struct {
 	columnIsSet       bool
 	defaultValueIsSet bool
 	pkIsSet           bool
+	autoIsSet         bool
 
 	columnName   string
 	defaultValue string
@@ -42,6 +43,7 @@ func parseTag(tagStr string) (t columnTag) {
 	}()
 
 	tags := strings.Split(tagStr, ";")
+	isAuto := true
 	for _, tag := range tags {
 		if tag == "-" {
 			t.skip = true
@@ -49,6 +51,10 @@ func parseTag(tagStr string) (t columnTag) {
 		}
 		if tag == "pk" {
 			t.pkIsSet = true
+			continue
+		}
+		if tag == "-auto" {
+			isAuto = false
 			continue
 		}
 		if !t.columnIsSet {
@@ -64,5 +70,6 @@ func parseTag(tagStr string) (t columnTag) {
 			}
 		}
 	}
+	t.autoIsSet = t.pkIsSet && isAuto
 	return
 }

@@ -17,6 +17,7 @@ type column struct {
 	name      string
 	typ       reflect.Type
 	isPK      bool
+	isAuto    bool
 }
 
 func structToTable(i interface{}) (tableName string, columns []*column) {
@@ -62,6 +63,7 @@ func structColumns(t reflect.Type) (columns []*column) {
 			name:      name,
 			typ:       fieldType,
 			isPK:      tag.pkIsSet,
+			isAuto:    tag.autoIsSet,
 		}
 		columns = append(columns, c)
 	}

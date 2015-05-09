@@ -68,6 +68,8 @@ func findPkColumn(cs []*column) (*column, error) {
 		}
 	}
 	if c == nil {
+		idColumn.isPK = true
+		idColumn.isAuto = true
 		c = idColumn
 	}
 	if c == nil {

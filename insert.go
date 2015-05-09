@@ -44,7 +44,7 @@ func (ex *executor) Insert(i interface{}, args ...string) (int64, error) {
 	}
 	for _, c := range columns {
 		v := e.FieldByName(c.fieldName)
-		if c.isPK {
+		if c.isAuto {
 			pk = v
 			continue
 		}
