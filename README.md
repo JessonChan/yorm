@@ -16,10 +16,10 @@ more about the detail, cc [https://github.com/lewgun]
 Now support these types of tag.
 
 ### column ###
-this tag alias struct name to a real column name. "Id int \`yorm:column(autoId)\`" means this field Id will name autoId in mysql column
+this tag alias struct name to a real column name. "Id int \`yorm:"column(autoId)"\`" means this field Id will name autoId in mysql column
 
 ### pk ###
-this tag allow you to set a primary key where select/delete/update as the where clause  "Id int \`yorm:column(autoId);pk\`"
+this tag allow you to set a primary key where select/delete/update as the where clause  "Id int \`yorm:"column(autoId);pk"\`"
 
 
 # benchmark #
