@@ -43,13 +43,11 @@ func (ex *executor) Insert(i interface{}, args ...string) (int64, error) {
 		}
 	}
 	for _, c := range columns {
-		//todo this is auto increase field
 		v := e.FieldByName(c.fieldName)
-		if strings.ToLower(c.fieldName) == "id" {
+		if c.isPK {
 			pk = v
 			continue
 		}
-
 		fs.WriteString("," + c.name + "=?")
 		dests = append(dests, fmt.Sprintf("%v", v.Interface()))
 	}
