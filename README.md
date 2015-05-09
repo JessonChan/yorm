@@ -26,9 +26,9 @@ this tag allow you to set a primary key where select/delete/update as the where 
 
 select by id with five fields execute 1e5 times (not very accurate)
 
-> beegoOrm 13376 microsecond   
->     xorm 16718 microsecond   
->     yorm 6759 microsecond   
+> beegoOrm 13376 milliseconds   
+>     xorm 16718 milliseconds   
+>     yorm 6759 milliseconds   
 
 code is here:
 
@@ -74,9 +74,9 @@ func init() {
 
 func main() {
 	fastfunc.SetRunTimes(1e5)
-	fmt.Println("beegoOrm", fastfunc.Run(beegoOrm)/1e6, "microsecond")
-	fmt.Println("    xorm", fastfunc.Run(xomrTest)/1e6, "microsecond")
-	fmt.Println("    yorm", fastfunc.Run(yormTest)/1e6, "microsecond")
+	fmt.Println("beegoOrm", fastfunc.Run(beegoOrm)/1e6, "milliseconds")
+	fmt.Println("    xorm", fastfunc.Run(xomrTest)/1e6, "milliseconds")
+	fmt.Println("    yorm", fastfunc.Run(yormTest)/1e6, "milliseconds")
 }
 
 func beegoOrm() {
