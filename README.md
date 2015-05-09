@@ -24,7 +24,7 @@ this tag allow you to set a primary key where select/delete/update as the where 
 
 # benchmark #
 
-select by id with five fields
+select by id with five fields execute 1e5 times (not very accurate)
 
 > beegoOrm 13376 microsecond   
 >     xorm 16718 microsecond   
