@@ -106,7 +106,11 @@ func (ex *executor) query(i interface{}, query string, args ...interface{}) erro
 	typ = typ.Elem()
 
 	if strings.Contains(query, "*") {
-		q, _ := newTableSetter(reflect.ValueOf(i))
+		vl := reflect.ValueOf(i)
+		if typ.Kind() == reflect.Slice {
+			vl = reflect.New(typ.Elem())
+		}
+		q, _ := newTableSetter(vl)
 		query = strings.Replace(query, "*", buildFullColumnSql(q), -1)
 	}
 

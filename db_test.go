@@ -104,3 +104,17 @@ func TestSelectByPk(t *testing.T) {
 	}
 	t.Log(a)
 }
+
+func TestListSelect(t *testing.T) {
+	SetLoggerLevel(DebugLevel)
+	Register("root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8")
+	var ps []ProgramLanguage
+	err := Select(&ps, "select * from program_language")
+	if len(ps) == 0 {
+		t.Log(err)
+		t.FailNow()
+	}
+	for _,v:=range ps{
+		t.Log(v)
+	}
+}
