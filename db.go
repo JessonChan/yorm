@@ -110,6 +110,7 @@ func (ex *executor) exec(clause string, args ...interface{}) (sql.Result, error)
 	if err != nil {
 		return nil, err
 	}
+	yogger.Debug("%s;%v", clause, args)
 	return stmt.Exec(args...)
 }
 

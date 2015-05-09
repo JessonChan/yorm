@@ -116,6 +116,7 @@ func (ex *executor) query(i interface{}, query string, args ...interface{}) erro
 	if stmt == nil {
 		return err
 	}
+	yogger.Debug("%s;%v", query, args)
 	if typ.Kind() == reflect.Slice {
 		rows, err := stmt.Query(args...)
 		if rows == nil {

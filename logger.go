@@ -8,7 +8,7 @@ type loggerInterface interface {
 	Error(string, ...interface{})
 }
 
-var logger loggerInterface = &yormLogger{}
+var yogger loggerInterface = &yormLogger{}
 var loggerLevel = ""
 
 var (
@@ -24,7 +24,7 @@ type yormLogger struct {
 }
 
 func InitLogger(l loggerInterface) {
-	logger = l
+	yogger = l
 }
 
 func SetLoggerLevel(s string) {
@@ -41,7 +41,7 @@ func writeMsg(l string, s string, f ...interface{}) {
 	}
 	msg := s
 	if len(f) > 0 {
-		msg = fmt.Sprintf(s, f)
+		msg = fmt.Sprintf(s, f...)
 	}
 	fmt.Printf("[%s] %s\n", l, msg)
 }

@@ -30,6 +30,7 @@ type A struct {
 }
 
 func TestYorm(t *testing.T) {
+	SetLoggerLevel(DebugLevel)
 	err := Register("root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8")
 	if err != nil {
 		t.Log(err)
