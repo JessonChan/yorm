@@ -71,19 +71,17 @@ func buildSelectSql(q *tableSetter, tableName ...string) *bytes.Buffer {
 	return queryClause
 }
 func buildFullColumnSql(q *tableSetter) string {
-	if q == nil {
+	if q == nil || len(q.columns) == 0 {
 		return ""
 	}
-	queryClause := bytes.NewBufferString("")
-	splitDot := ","
+	queryClause := bytes.NewBuffer([]byte{})
 	for loop := 0; loop < len(q.columns); loop++ {
-		if loop == len(q.columns)-1 {
-			splitDot = " "
-		}
+		queryClause.WriteByte(',')
 		queryClause.WriteString(q.columns[loop].name)
-		queryClause.WriteString(splitDot)
 	}
-	return queryClause.String()
+	queryClause.WriteByte(' ')
+	//1 means a ","
+	return string(queryClause.Bytes()[1:])
 }
 
 //Query do a query operation.
