@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+var tableSqlMap = map[string]string{}
+
 type sqlScanner interface {
 	Scan(dest ...interface{}) error
 }
@@ -23,18 +25,29 @@ func SelectByPK(i interface{}, tableName ...string) error {
 
 // select by the primary key,the table name param means you can select from other tables
 func (ex *executor) SelectByPK(i interface{}, tableName ...string) error {
-	if !reflect.ValueOf(i).IsValid() {
+	iv := reflect.ValueOf(i)
+
+	if !iv.IsValid() {
 		return ErrNotSupported
 	}
-	q, err := newTableSetter(reflect.ValueOf(i))
+	q, err := newTableSetter(iv)
 	if q == nil {
 		return err
 	}
-	queryClause := buildSelectSql(q, tableName...)
-	queryClause.WriteString("WHERE ")
-	queryClause.WriteString(q.pkColumn.name)
-	queryClause.WriteString("=? LIMIT 1")
-	return ex.query(i, queryClause.String(), reflect.ValueOf(i).Elem().FieldByName(q.pkColumn.fieldName).Int())
+	table := q.table
+	if len(tableName) > 0 {
+		table = tableName[0]
+	}
+	clause := tableSqlMap[table]
+	if clause == "" {
+		queryClause := buildSelectSql(q, tableName...)
+		queryClause.WriteString("WHERE ")
+		queryClause.WriteString(q.pkColumn.name)
+		queryClause.WriteString("=? LIMIT 1")
+		clause = queryClause.String()
+		tableSqlMap[table] = clause
+	}
+	return ex.query(i, clause, iv.Elem().FieldByName(q.pkColumn.fieldName).Int())
 }
 
 //Query do a select operation.
