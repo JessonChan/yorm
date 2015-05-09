@@ -34,13 +34,6 @@ type executor struct {
 
 //RegisterWithName register a database dirver with specific name.
 func RegisterWithName(dsn, name string, driver ...string) (err error) {
-	defer func() {
-		logger.Debug("finish register " + name)
-		if err != nil {
-			logger.Error("register failed %v", err)
-		}
-	}()
-	logger.Debug("begin register " + name)
 	if executorMap[name] != nil {
 		return nil
 	}
