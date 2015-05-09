@@ -59,11 +59,7 @@ func (ex *executor) Insert(i interface{}, args ...string) (int64, error) {
 
 	clause.Write(fs.Bytes()[1:])
 
-	stmt, err := getStmt(clause.String())
-	if err != nil {
-		return 0, err
-	}
-	r, err := stmt.Exec(dests...)
+	r, err := ex.exec(clause, dests...)
 	if err != nil {
 		return 0, err
 	}

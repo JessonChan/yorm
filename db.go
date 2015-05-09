@@ -105,6 +105,14 @@ func (ex *executor) getStmt(clause string) (*sql.Stmt, error) {
 	return stmt, err
 }
 
+func (ex *executor) exec(clause string, args ...interface{}) (sql.Result, error) {
+	stmt, err := ex.getStmt(clause)
+	if err != nil {
+		return nil, err
+	}
+	return stmt.Exec(args...)
+}
+
 func getStmt(clause string) (*sql.Stmt, error) {
 	if defaultExecutor == nil {
 		return nil, ErrNilSqlExecutor
