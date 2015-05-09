@@ -28,7 +28,11 @@ select by id with five fields execute 1e5 times (not very accurate)
 
 > beegoOrm 13376 milliseconds   
 >     xorm 16718 milliseconds   
->     yorm 6759 milliseconds   
+>     yorm 6759 milliseconds    
+
+> beegoOrm 14149 microsecond   
+>     xorm 17685 microsecond   
+>     yorm 7568 microsecond   
 
 code is here:
 
