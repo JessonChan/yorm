@@ -138,4 +138,10 @@ func TestSMethod(t *testing.T) {
 		t.Log(err)
 		t.FailNow()
 	}
+	err = S(&p, "select * from program_language where id=?", 2)
+	t.Log(p)
+	if p.Name == "" {
+		t.Log(err)
+		t.FailNow()
+	}
 }
