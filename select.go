@@ -50,6 +50,39 @@ func (ex *executor) SelectByPK(i interface{}, tableName ...string) error {
 	return ex.query(i, clause, iv.Elem().FieldByName(q.pkColumn.fieldName).Int())
 }
 
+func S(i interface{}, cond ...interface{}) error {
+	return defaultExecutor.S(i, cond...)
+}
+
+// the s method is a super method,easy but not so fast
+func (ex *executor) S(i interface{}, cond ...interface{}) error {
+	var typ reflect.Type
+	var q *tableSetter
+	var err error
+
+	q, err = newTableSetter(reflect.ValueOf(i))
+	if q == nil {
+		typ, q, err = newTableSetterBySlice(i)
+		if typ == nil {
+			return err
+		}
+	}
+
+	switch len(cond) {
+	case 0:
+		if typ == nil {
+			return ex.SelectByPK(i)
+		} else {
+			return ex.Select(i, buildSelectSql(q).String())
+		}
+	default:
+		if reflect.TypeOf(cond[0]).Kind() != reflect.String {
+			return ErrIllegalParams
+		}
+		return ex.Select(i, cond[0].(string), cond[1:]...)
+	}
+}
+
 //Query do a select operation.
 // if the is a struct ,you need not write select x,y,z,you need only write the where condition ...
 func (ex *executor) Select(i interface{}, condition string, args ...interface{}) error {
@@ -145,23 +178,28 @@ func queryList(i interface{}, rows *sql.Rows) error {
 	return convertAssignRows(i, rows)
 }
 
-func convertAssignRows(i interface{}, rows *sql.Rows) error {
+func newTableSetterBySlice(i interface{}) (reflect.Type, *tableSetter, error) {
 	typ := reflect.TypeOf(i)
 	if typ.Kind() != reflect.Ptr {
-		return ErrNonPtr
+		return nil, nil, ErrNonPtr
 	}
 	typ = typ.Elem()
 	if typ.Kind() != reflect.Slice {
-		return ErrNonSlice
+		return nil, nil, ErrNonSlice
 	}
 	typ = typ.Elem()
-	var q *tableSetter
-	var err error
 	if typ.Kind() == reflect.Struct {
-		q, err = newTableSetter(reflect.New(typ))
-		if q == nil {
-			return err
-		}
+		q, e := newTableSetter(reflect.New(typ))
+		return typ, q, e
+	} else {
+		return typ, nil, nil
+	}
+}
+
+func convertAssignRows(i interface{}, rows *sql.Rows) error {
+	typ, q, err := newTableSetterBySlice(i)
+	if typ == nil {
+		return err
 	}
 	size := 0
 	v := reflect.Indirect(reflect.ValueOf(i))
