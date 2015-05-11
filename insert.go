@@ -49,19 +49,21 @@ func (ex *executor) Insert(i interface{}, args ...string) (int64, error) {
 		//		if !v.IsValid() {
 		//			continue
 		//		}
+
 		if c.isAuto {
 			pk = v
 			continue
 		}
-		fs.WriteString("," + c.name + "=?")
 		vi := v.Interface()
 		if v.Type() == TimeType {
 			//zero time ,skip insert
-			if !v.IsValid() {
+			if vi.(time.Time).IsZero() {
 				continue
 			}
 			vi = vi.(time.Time).Format("2006-01-02 15:04:05")
 		}
+
+		fs.WriteString("," + c.name + "=?")
 		dests = append(dests, fmt.Sprintf("%v", vi))
 	}
 	if fs.Len() == 0 {
