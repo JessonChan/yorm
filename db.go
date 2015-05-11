@@ -117,12 +117,6 @@ func (ex *executor) exec(clause string, args ...interface{}) (sql.Result, error)
 	return stmt.Exec(args...)
 }
 
-func getStmt(clause string) (*sql.Stmt, error) {
-	if defaultExecutor == nil {
-		return nil, ErrNilSqlExecutor
-	}
-	return defaultExecutor.getStmt(clause)
-}
 
 func validClause(clause string) (string, error) {
 	return clause, nil
