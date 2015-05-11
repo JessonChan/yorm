@@ -16,6 +16,8 @@ func (ex *executor) Insert(i interface{}, args ...string) (int64, error) {
 		return 0, err
 	}
 
+	fmt.Println(q, err)
+
 	clause := &bytes.Buffer{}
 	clause.WriteString("INSERT INTO ")
 	clause.WriteString(q.table)
