@@ -83,16 +83,12 @@ func newPtrInterface(t reflect.Type) interface{} {
 	k := t.Kind()
 	var ti interface{}
 	switch k {
-	case reflect.Int:
-		ti = new(int)
-	case reflect.Int64:
-		ti = new(int64)
+	case reflect.Int, reflect.Int64:
+		ti = new(sql.NullInt64)
 	case reflect.String:
-		ti = new(string)
-	case reflect.Float32:
-		ti = new(float32)
-	case reflect.Float64:
-		ti = new(float64)
+		ti = new(sql.NullString)
+	case reflect.Float32, reflect.Float64:
+		ti = new(sql.NullFloat64)
 	case reflect.Struct:
 		switch t {
 		case TimeType:
@@ -110,24 +106,32 @@ func scanValue(sc sqlScanner, q *tableSetter, st reflect.Value) error {
 	for idx, c := range q.columns {
 		// different assign func here
 		switch c.typ.Kind() {
-		case reflect.Int:
-			st.Field(c.fieldNum).SetInt(int64(*(q.dests[idx].(*int))))
-		case reflect.Int64:
-			st.Field(c.fieldNum).SetInt(int64(*(q.dests[idx].(*int64))))
+		case reflect.Int, reflect.Int64:
+			sqlValue := sql.NullInt64(*(q.dests[idx].(*sql.NullInt64)))
+			if !sqlValue.Valid {
+				continue
+			}
+			st.Field(c.fieldNum).SetInt(sqlValue.Int64)
 		case reflect.String:
-			st.Field(c.fieldNum).SetString(string(*(q.dests[idx].(*string))))
-		case reflect.Float32:
-			st.Field(c.fieldNum).SetFloat(float64(*(q.dests[idx].(*float32))))
-		case reflect.Float64:
-			st.Field(c.fieldNum).SetFloat(float64(*(q.dests[idx].(*float64))))
+			sqlValue := sql.NullString(*(q.dests[idx].(*sql.NullString)))
+			if !sqlValue.Valid {
+				continue
+			}
+			st.Field(c.fieldNum).SetString(sqlValue.String)
+		case reflect.Float32, reflect.Float64:
+			sqlValue := sql.NullFloat64(*(q.dests[idx].(*sql.NullFloat64)))
+			if !sqlValue.Valid {
+				continue
+			}
+			st.Field(c.fieldNum).SetFloat(sqlValue.Float64)
 		case reflect.Struct:
 			switch c.typ {
 			case TimeType:
-				timeSqlStr := sql.NullString(*(q.dests[idx].(*sql.NullString)))
-				if !timeSqlStr.Valid {
+				sqlValue := sql.NullString(*(q.dests[idx].(*sql.NullString)))
+				if !sqlValue.Valid {
 					continue
 				}
-				timeStr := timeSqlStr.String
+				timeStr := sqlValue.String
 				var layout string
 				if len(timeStr) == 10 {
 					layout = "2006-01-02"
