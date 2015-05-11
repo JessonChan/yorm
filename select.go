@@ -50,12 +50,12 @@ func (ex *executor) SelectByPK(i interface{}, tableName ...string) error {
 	return ex.query(i, clause, iv.Elem().FieldByName(q.pkColumn.fieldName).Int())
 }
 
-func S(i interface{}, cond ...interface{}) error {
-	return defaultExecutor.S(i, cond...)
+func R(i interface{}, cond ...interface{}) error {
+	return defaultExecutor.R(i, cond...)
 }
 
 // the s method is a super method,easy but not so fast
-func (ex *executor) S(i interface{}, cond ...interface{}) error {
+func (ex *executor) R(i interface{}, cond ...interface{}) error {
 	var typ reflect.Type
 	var q *tableSetter
 	var err error

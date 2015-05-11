@@ -123,15 +123,7 @@ func TestSMethod(t *testing.T) {
 	SetLoggerLevel(DebugLevel)
 	Register("root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8")
 	var ps []ProgramLanguage
-	err := S(&ps)
-	if len(ps) == 0 {
-		t.Log(err)
-		t.FailNow()
-	}
-	for _, v := range ps {
-		t.Log(v)
-	}
-	err = S(&ps, "select * from program_language")
+	err := R(&ps)
 	if len(ps) == 0 {
 		t.Log(err)
 		t.FailNow()
@@ -140,13 +132,22 @@ func TestSMethod(t *testing.T) {
 		t.Log(v)
 	}
 	var p ProgramLanguage = ProgramLanguage{Id: 1}
-	err = S(&p)
+	err = R(&p)
 	t.Log(p)
 	if p.Name == "" {
 		t.Log(err)
 		t.FailNow()
 	}
-	err = S(&p, "select * from program_language where id=?", 2)
+
+	err = R(&ps, "select * from program_language")
+	if len(ps) == 0 {
+		t.Log(err)
+		t.FailNow()
+	}
+	for _, v := range ps {
+		t.Log(v)
+	}
+	err = R(&p, "select * from program_language where id=?", 2)
 	t.Log(p)
 	if p.Name == "" {
 		t.Log(err)
