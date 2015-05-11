@@ -1,6 +1,7 @@
 package yorm
 
 import (
+	"database/sql"
 	"reflect"
 	"strings"
 	"time"
@@ -95,7 +96,7 @@ func newPtrInterface(t reflect.Type) interface{} {
 	case reflect.Struct:
 		switch t {
 		case TimeType:
-			ti = new(string)
+			ti = new(sql.NullString)
 		}
 	}
 	return ti
@@ -122,7 +123,11 @@ func scanValue(sc sqlScanner, q *tableSetter, st reflect.Value) error {
 		case reflect.Struct:
 			switch c.typ {
 			case TimeType:
-				timeStr := string(*(q.dests[idx].(*string)))
+				timeSqlStr := sql.NullString(*(q.dests[idx].(*sql.NullString)))
+				if !timeSqlStr.Valid {
+					continue
+				}
+				timeStr := timeSqlStr.String
 				var layout string
 				if len(timeStr) == 10 {
 					layout = "2006-01-02"
