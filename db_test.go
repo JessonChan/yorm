@@ -131,6 +131,14 @@ func TestSMethod(t *testing.T) {
 	for _, v := range ps {
 		t.Log(v)
 	}
+	err = S(&ps, "select * from program_language")
+	if len(ps) == 0 {
+		t.Log(err)
+		t.FailNow()
+	}
+	for _, v := range ps {
+		t.Log(v)
+	}
 	var p ProgramLanguage = ProgramLanguage{Id: 1}
 	err = S(&p)
 	t.Log(p)
