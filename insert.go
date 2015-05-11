@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 )
 
 //Insert  return lastInsertId and error if has
@@ -49,7 +50,11 @@ func (ex *executor) Insert(i interface{}, args ...string) (int64, error) {
 			continue
 		}
 		fs.WriteString("," + c.name + "=?")
-		dests = append(dests, fmt.Sprintf("%v", v.Interface()))
+		vi := v.Interface()
+		if v.Type() == TimeType {
+			vi = vi.(time.Time).Format("2006-01-02 15:04:05")
+		}
+		dests = append(dests, fmt.Sprintf("%v", vi))
 	}
 	if fs.Len() == 0 {
 		return 0, errors.New("no filed to insert")
