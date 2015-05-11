@@ -60,7 +60,7 @@ func (ex *executor) Insert(i interface{}, args ...string) (int64, error) {
 			if vi.(time.Time).IsZero() {
 				continue
 			}
-			vi = vi.(time.Time).Format("2006-01-02 15:04:05")
+			vi = vi.(time.Time).Format(longSimpleTimeFormat)
 		}
 
 		fs.WriteString("," + c.name + "=?")

@@ -138,10 +138,10 @@ func scanValue(sc sqlScanner, q *tableSetter, st reflect.Value) error {
 				timeStr := sqlValue.String
 				var layout string
 				if len(timeStr) == 10 {
-					layout = "2006-01-02"
+					layout = shortSimpleTimeFormat
 				}
 				if len(timeStr) == 19 {
-					layout = "2006-01-02 15:04:05"
+					layout = longSimpleTimeFormat
 				}
 				timeTime, err := time.ParseInLocation(layout, timeStr, time.Local)
 				if timeTime.IsZero() {

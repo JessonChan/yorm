@@ -10,6 +10,9 @@ const (
 	//DriverMySQL driver for mysql
 	DriverMySQL         = "mysql"
 	defaultExecutorName = "default"
+
+	shortSimpleTimeFormat = "2006-01-02"
+	longSimpleTimeFormat  = "2006-01-02 15:04:05"
 )
 
 var (
