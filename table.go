@@ -83,7 +83,9 @@ func newPtrInterface(t reflect.Type) interface{} {
 	k := t.Kind()
 	var ti interface{}
 	switch k {
-	case reflect.Int, reflect.Int64:
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		fallthrough
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		ti = new(sql.NullInt64)
 	case reflect.String:
 		ti = new(sql.NullString)
@@ -106,7 +108,9 @@ func scanValue(sc sqlScanner, q *tableSetter, st reflect.Value) error {
 	for idx, c := range q.columns {
 		// different assign func here
 		switch c.typ.Kind() {
-		case reflect.Int, reflect.Int64:
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			fallthrough
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 			sqlValue := sql.NullInt64(*(q.dests[idx].(*sql.NullInt64)))
 			if !sqlValue.Valid {
 				continue
