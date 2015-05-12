@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"reflect"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -20,9 +21,13 @@ var (
 
 	// one struct reflect to a table query setter
 	tableMap = map[reflect.Value]*tableSetter{}
+	//table lock
+	tableRWLock sync.RWMutex
 )
 
 func newTableSetter(ri reflect.Value) (*tableSetter, error) {
+	tableRWLock.Lock()
+	defer tableRWLock.Unlock()
 	if q, ok := tableMap[ri]; ok {
 		return q, nil
 	}
