@@ -33,13 +33,11 @@ func newTableSetter(ri reflect.Value) (*tableSetter, error) {
 		return nil, ErrNotSupported
 	}
 	q := new(tableSetter)
-	defer func() {
-		tableMap[ri] = q
-	}()
 	table, cs := structToTable(reflect.Indirect(ri).Interface())
 	var err error
 	q.pkColumn, err = findPkColumn(cs)
 	if q.pkColumn == nil {
+		tableMap[ri] = nil
 		return nil, err
 	}
 	q.table = table
@@ -48,6 +46,7 @@ func newTableSetter(ri reflect.Value) (*tableSetter, error) {
 	for k, v := range cs {
 		q.dests[k] = newPtrInterface(v.typ)
 	}
+	tableMap[ri] = q
 	return q, nil
 }
 
