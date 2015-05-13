@@ -26,6 +26,9 @@ var (
 )
 
 func newTableSetter(ri reflect.Value) (*tableSetter, error) {
+	if q, ok := tableMap[ri]; ok {
+		return q, nil
+	}
 	tableRWLock.Lock()
 	defer tableRWLock.Unlock()
 	if q, ok := tableMap[ri]; ok {
