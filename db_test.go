@@ -84,6 +84,12 @@ func TestYorm(t *testing.T) {
 	if err != ErrNilSqlExecutor {
 		t.FailNow()
 	}
+	var count int
+	Select(&count, "select count(0) from program_language")
+	t.Log(count)
+	if count == 0 {
+		t.FailNow()
+	}
 }
 
 func TestSelectByPk(t *testing.T) {
