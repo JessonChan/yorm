@@ -29,6 +29,13 @@ type A struct {
 	GW   GolangWord
 }
 
+func TestCount(t *testing.T) {
+	SetLoggerLevel(DebugLevel)
+	Register("root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8")
+//	t.Log(Count(&GolangWord{}))
+	t.Log(Count(&GolangWord{}, "where rate>?", 0.5))
+}
+
 func TestYorm(t *testing.T) {
 	SetLoggerLevel(DebugLevel)
 	err := Register("root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8")

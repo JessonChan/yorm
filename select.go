@@ -51,14 +51,18 @@ func (ex *executor) SelectByPK(i interface{}, tableName ...string) error {
 	return ex.query(i, clause, iv.Elem().FieldByName(q.pkColumn.fieldName).Int())
 }
 
-func Count(i interface{}, where ...string) int64 {
+func Count(i interface{}, where ...interface{}) int64 {
 	// i maybe not ptr
 	q, _ := newTableSetter(reflect.ValueOf(i))
 	if q == nil {
 		return 0
 	}
 	var count int64
-	Select(&count, fmt.Sprintf("select count(0) from %s %s", q.table, where[0].(string)), where[1:]...)
+	if len(where) > 0 {
+		Select(&count, fmt.Sprintf("select count(0) from %s %s", q.table, where[0].(string)), where[1:]...)
+	} else {
+		Select(&count, fmt.Sprintf("select count(0) from %s", q.table))
+	}
 	return count
 }
 
