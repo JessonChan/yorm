@@ -47,6 +47,10 @@ func main() {
 	fmt.Println(ps)
 
 	//也可以
+	yorm.Select(&ps, "where id<?", 10)
+	fmt.Println(ps)
+
+	//也可以
 	yorm.Select(&ps, "where <10")
 	fmt.Println(ps)
 
