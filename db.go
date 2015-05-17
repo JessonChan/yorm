@@ -29,6 +29,8 @@ type sqlExecutor interface {
 	Insert(i interface{}, args ...string) (int64, error)
 	Update(clause string, args ...interface{}) (int64, error)
 	Delete(clause string, args ...interface{}) (int64, error)
+	SetMaxIdleConns(int)
+	SetMaxOpenConns(int)
 }
 
 type executor struct {
@@ -82,6 +84,10 @@ func (n nilSqlExecutor) Update(clause string, args ...interface{}) (int64, error
 func (n nilSqlExecutor) Delete(clause string, args ...interface{}) (int64, error) {
 	return 0, ErrNilSqlExecutor
 }
+func (n nilSqlExecutor) SetMaxOpenConns(int) {
+}
+func (n nilSqlExecutor) SetMaxIdleConns(int) {
+}
 
 //Using using the executor with name, if not exist  nilSqlExecutor instead.
 func Using(name string) sqlExecutor {
@@ -116,7 +122,6 @@ func (ex *executor) exec(clause string, args ...interface{}) (sql.Result, error)
 	yogger.Debug("%s;%v", clause, args)
 	return stmt.Exec(args...)
 }
-
 
 func validClause(clause string) (string, error) {
 	return clause, nil
