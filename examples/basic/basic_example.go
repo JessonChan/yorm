@@ -7,6 +7,7 @@ import (
 
 	"github.com/JessonChan/yorm"
 )
+import _ "github.com/go-sql-driver/mysql"
 
 /*
 CREATE TABLE `program_language` (
