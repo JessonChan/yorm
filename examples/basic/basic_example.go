@@ -8,6 +8,17 @@ import (
 	"github.com/JessonChan/yorm"
 )
 
+/*
+CREATE TABLE `program_language` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(32) DEFAULT NULL,
+  `rank_month` date DEFAULT NULL,
+  `position` int(11) DEFAULT NULL,
+  `created` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+*/
+
 type ProgramLanguage struct {
 	Id        int64
 	Position  int
@@ -18,6 +29,7 @@ type ProgramLanguage struct {
 
 func main() {
 	yorm.SetLoggerLevel(yorm.DebugLevel)
+	//设置自己的数据地址
 	yorm.Register("root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8")
 
 	//插入一条数据
