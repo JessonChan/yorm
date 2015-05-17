@@ -73,9 +73,4 @@ func main() {
 	//读取id为1的某条数据
 	yorm.SelectByPK(&p)
 	fmt.Println(p)
-
-	//读取id为2的某条数据,
-	yorm.SelectByPK(&p, "where id=?", 2)
-	fmt.Println(p)
-
 }
