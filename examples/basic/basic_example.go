@@ -19,6 +19,11 @@ type ProgramLanguage struct {
 func main() {
 	yorm.SetLoggerLevel(yorm.DebugLevel)
 	yorm.Register("root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8")
+
+	//插入一条数据
+	php := ProgramLanguage{Name: "PHP", Position: 7, RankMonth: time.Now(), Created: time.Now()}
+	yorm.Insert(&php)
+
 	var ps []ProgramLanguage
 
 	//读取所有的数据
@@ -47,4 +52,9 @@ func main() {
 	yorm.SelectByPK(&p, "where id=?", 2)
 	fmt.Println(p)
 
+	//更新一条数据
+	yorm.Update("update program_language set position=?", 8)
+
+	//删除一条
+	yorm.Delete("delete from program_language where id=? ", p.Id)
 }
