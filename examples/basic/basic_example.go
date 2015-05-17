@@ -46,6 +46,10 @@ func main() {
 	yorm.R(&ps, "where id<10")
 	fmt.Println(ps)
 
+	//读取所有小于10的数据
+	yorm.R(&ps, "where id<?", 10)
+	fmt.Println(ps)
+
 	//也可以
 	yorm.Select(&ps, "where id<?", 10)
 	fmt.Println(ps)
