@@ -117,6 +117,7 @@ func (ex *executor) getStmt(clause string) (*sql.Stmt, error) {
 func (ex *executor) exec(clause string, args ...interface{}) (sql.Result, error) {
 	//如果是单句执行，不需要再使用stmt，防止过多的prepare
 	if len(args) == 0 {
+		yogger.Debug("%s", clause)
 		return ex.Exec(clause)
 	}
 	stmt, err := ex.getStmt(clause)
