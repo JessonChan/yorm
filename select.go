@@ -248,7 +248,7 @@ func convertAssignRows(i interface{}, rows *sql.Rows) error {
 			}
 		} else {
 			rows.Scan(ti)
-			st.Set(reflect.ValueOf(ti).Elem())
+			setValue(st, ti)
 		}
 		v.Index(size).Set(st)
 		size++

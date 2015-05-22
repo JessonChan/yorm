@@ -2,6 +2,7 @@ package yorm
 
 import (
 	"database/sql"
+	"errors"
 	"reflect"
 	"strings"
 	"sync"
@@ -114,48 +115,58 @@ func scanValue(sc sqlScanner, q *tableSetter, st reflect.Value) error {
 	}
 	for idx, c := range q.columns {
 		// different assign func here
-		switch c.typ.Kind() {
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			fallthrough
-		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			sqlValue := sql.NullInt64(*(q.dests[idx].(*sql.NullInt64)))
+		fv := st.Field(c.fieldNum)
+		fi := q.dests[idx]
+		err := setValue(fv, fi)
+		if err != nil {
+			continue
+		}
+	}
+	return nil
+}
+
+func setValue(fv reflect.Value, fi interface{}) error {
+	switch fv.Type().Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		fallthrough
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		sqlValue := sql.NullInt64(*(fi.(*sql.NullInt64)))
+		if !sqlValue.Valid {
+			return errors.New("sqlValue is invalid")
+		}
+		fv.SetInt(sqlValue.Int64)
+	case reflect.String:
+		sqlValue := sql.NullString(*(fi.(*sql.NullString)))
+		if !sqlValue.Valid {
+			return errors.New("sqlValue is invalid")
+		}
+		fv.SetString(sqlValue.String)
+	case reflect.Float32, reflect.Float64:
+		sqlValue := sql.NullFloat64(*(fi.(*sql.NullFloat64)))
+		if !sqlValue.Valid {
+			return errors.New("sqlValue is invalid")
+		}
+		fv.SetFloat(sqlValue.Float64)
+	case reflect.Struct:
+		switch fv.Type() {
+		case TimeType:
+			sqlValue := sql.NullString(*(fi.(*sql.NullString)))
 			if !sqlValue.Valid {
-				continue
+				return errors.New("sqlValue is invalid")
 			}
-			st.Field(c.fieldNum).SetInt(sqlValue.Int64)
-		case reflect.String:
-			sqlValue := sql.NullString(*(q.dests[idx].(*sql.NullString)))
-			if !sqlValue.Valid {
-				continue
+			timeStr := sqlValue.String
+			var layout string
+			if len(timeStr) == 10 {
+				layout = shortSimpleTimeFormat
 			}
-			st.Field(c.fieldNum).SetString(sqlValue.String)
-		case reflect.Float32, reflect.Float64:
-			sqlValue := sql.NullFloat64(*(q.dests[idx].(*sql.NullFloat64)))
-			if !sqlValue.Valid {
-				continue
+			if len(timeStr) == 19 {
+				layout = longSimpleTimeFormat
 			}
-			st.Field(c.fieldNum).SetFloat(sqlValue.Float64)
-		case reflect.Struct:
-			switch c.typ {
-			case TimeType:
-				sqlValue := sql.NullString(*(q.dests[idx].(*sql.NullString)))
-				if !sqlValue.Valid {
-					continue
-				}
-				timeStr := sqlValue.String
-				var layout string
-				if len(timeStr) == 10 {
-					layout = shortSimpleTimeFormat
-				}
-				if len(timeStr) == 19 {
-					layout = longSimpleTimeFormat
-				}
-				timeTime, err := time.ParseInLocation(layout, timeStr, time.Local)
-				if timeTime.IsZero() {
-					return err
-				}
-				st.Field(c.fieldNum).Set(reflect.ValueOf(timeTime))
+			timeTime, err := time.ParseInLocation(layout, timeStr, time.Local)
+			if timeTime.IsZero() {
+				return err
 			}
+			fv.Set(reflect.ValueOf(timeTime))
 		}
 	}
 	return nil

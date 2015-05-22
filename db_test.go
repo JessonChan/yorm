@@ -32,7 +32,7 @@ type A struct {
 func TestCount(t *testing.T) {
 	SetLoggerLevel(DebugLevel)
 	Register("root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8")
-//	t.Log(Count(&GolangWord{}))
+	//	t.Log(Count(&GolangWord{}))
 	t.Log(Count(&GolangWord{}, "where rate>?", 0.5))
 }
 
@@ -130,6 +130,13 @@ func TestListSelect(t *testing.T) {
 	for _, v := range ps {
 		t.Log(v)
 	}
+}
+
+func TestSelectIdList(t *testing.T) {
+	Register("root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8")
+	var ids []int
+	R(&ids, "select id from program_language")
+	t.Log(ids)
 }
 
 func TestSMethod(t *testing.T) {
