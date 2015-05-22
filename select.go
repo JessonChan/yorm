@@ -172,6 +172,7 @@ func (ex *executor) query(i interface{}, query string, args ...interface{}) erro
 	yogger.Debug("%s;%v", query, args)
 	if typ.Kind() == reflect.Slice {
 		rows, err := stmt.Query(args...)
+		yogger.Debug("%v", err)
 		if rows == nil {
 			return err
 		}
@@ -222,7 +223,6 @@ func convertAssignRows(i interface{}, rows *sql.Rows) error {
 	v := reflect.Indirect(reflect.ValueOf(i))
 	ti := newPtrInterface(typ)
 	for rows.Next() {
-		yogger.Debug("%v", size)
 		if size >= v.Cap() {
 			newCap := v.Cap()
 			if newCap == 0 {
