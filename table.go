@@ -120,7 +120,7 @@ func scanValue(sc sqlScanner, q *tableSetter, st reflect.Value) error {
 		fi := q.dests[idx]
 		err := setValue(fv, fi)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println(fv, fi, err)
 			continue
 		}
 	}
