@@ -175,6 +175,7 @@ func (ex *executor) query(i interface{}, query string, args ...interface{}) erro
 		if rows == nil {
 			return err
 		}
+		yogger.Debug("%v", rows)
 		return queryList(i, rows)
 	}
 	return queryOne(i, stmt.QueryRow(args...))
@@ -221,6 +222,7 @@ func convertAssignRows(i interface{}, rows *sql.Rows) error {
 	v := reflect.Indirect(reflect.ValueOf(i))
 	ti := newPtrInterface(typ)
 	for rows.Next() {
+		yogger.Debug("%v", size)
 		if size >= v.Cap() {
 			newCap := v.Cap()
 			if newCap == 0 {
