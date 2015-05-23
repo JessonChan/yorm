@@ -33,6 +33,12 @@ func TestCount(t *testing.T) {
 	SetLoggerLevel(DebugLevel)
 	Register("root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8")
 	//	t.Log(Count(&GolangWord{}))
+	var c int64
+	c = 64
+	Select(&c, "select count(0) from program_language where id>100000")
+	if c != 0 {
+		t.FailNow()
+	}
 	t.Log(Count(&GolangWord{}, "where rate>?", 0.5))
 }
 

@@ -132,18 +132,21 @@ func setValue(fv reflect.Value, fi interface{}) error {
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		sqlValue := sql.NullInt64(*(fi.(*sql.NullInt64)))
 		if !sqlValue.Valid {
+			fv.SetInt(0)
 			return errors.New("sqlValue is invalid")
 		}
 		fv.SetInt(sqlValue.Int64)
 	case reflect.String:
 		sqlValue := sql.NullString(*(fi.(*sql.NullString)))
 		if !sqlValue.Valid {
+			fv.SetString("")
 			return errors.New("sqlValue is invalid")
 		}
 		fv.SetString(sqlValue.String)
 	case reflect.Float32, reflect.Float64:
 		sqlValue := sql.NullFloat64(*(fi.(*sql.NullFloat64)))
 		if !sqlValue.Valid {
+			fv.SetFloat(0.0)
 			return errors.New("sqlValue is invalid")
 		}
 		fv.SetFloat(sqlValue.Float64)

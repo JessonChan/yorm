@@ -172,11 +172,9 @@ func (ex *executor) query(i interface{}, query string, args ...interface{}) erro
 	yogger.Debug("%s;%v", query, args)
 	if typ.Kind() == reflect.Slice {
 		rows, err := stmt.Query(args...)
-		yogger.Debug("%v", err)
 		if rows == nil {
 			return err
 		}
-		yogger.Debug("%v", rows)
 		return queryList(i, rows)
 	}
 	return queryOne(i, stmt.QueryRow(args...))
