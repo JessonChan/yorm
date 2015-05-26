@@ -165,11 +165,11 @@ func (ex *executor) query(i interface{}, query string, args ...interface{}) erro
 
 	var err error
 	var stmt *sql.Stmt
+	yogger.Debug("%s;%v", query, args)
 	stmt, err = ex.getStmt(query)
 	if stmt == nil {
 		return err
 	}
-	yogger.Debug("%s;%v", query, args)
 	if typ.Kind() == reflect.Slice {
 		rows, err := stmt.Query(args...)
 		if rows == nil {
