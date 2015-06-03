@@ -37,7 +37,7 @@ type executor struct {
 	*sql.DB
 }
 
-//RegisterWithName register a database dirver with specific name.
+//RegisterWithName register a database driver with specific name.
 func RegisterWithName(dsn, name string, driver ...string) (err error) {
 	if executorMap[name] != nil {
 		return nil
