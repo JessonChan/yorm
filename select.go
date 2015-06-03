@@ -98,6 +98,28 @@ func (ex *executor) R(i interface{}, cond ...interface{}) error {
 		return ex.Select(i, cond[0].(string), cond[1:]...)
 	}
 }
+func (ex *tranExecutor) Select(i interface{}, condition string, args ...interface{}) error {
+	if ex == nil {
+		return ErrNilMethodReceiver
+	}
+
+	if strings.HasPrefix(strings.ToUpper(condition), "SELECT") {
+		return ex.query(i, condition, args...)
+	}
+
+	q, _ := newTableSetter(reflect.ValueOf(i))
+	if q == nil {
+		return ErrNotSupported
+	}
+	queryClause := buildSelectSql(q)
+
+	if !strings.HasPrefix(strings.ToUpper(condition), "WHERE") {
+		queryClause.WriteString("WHERE ")
+	}
+	queryClause.WriteString(condition)
+
+	return ex.query(i, queryClause.String(), args...)
+}
 
 //Query do a select operation.
 // if the is a struct ,you need not write select x,y,z,you need only write the where condition ...
@@ -144,6 +166,35 @@ func buildFullColumnSql(q *tableSetter) string {
 	queryClause.WriteByte(' ')
 	//1 means a ","
 	return string(queryClause.Bytes()[1:])
+}
+
+//Query do a query operation.
+func (ex *tranExecutor) query(i interface{}, query string, args ...interface{}) error {
+	typ := reflect.TypeOf(i)
+	if typ.Kind() != reflect.Ptr {
+		return ErrNonPtr
+	}
+	typ = typ.Elem()
+
+	if strings.Contains(query, "*") {
+		vl := reflect.ValueOf(i)
+		if typ.Kind() == reflect.Slice {
+			vl = reflect.New(typ.Elem())
+		}
+		q, _ := newTableSetter(vl)
+		query = strings.Replace(query, "*", buildFullColumnSql(q), -1)
+	}
+
+	yogger.Debug("%s;%v", query, args)
+	if typ.Kind() == reflect.Slice {
+		rows, err := ex.Query(query, args...)
+		if rows == nil {
+			return err
+		}
+		return queryList(i, rows)
+	}
+	return queryOne(i, ex.QueryRow(query, args...))
+
 }
 
 //Query do a query operation.

@@ -5,7 +5,11 @@ import (
 	"time"
 )
 
-import _ "github.com/go-sql-driver/mysql"
+import (
+	"fmt"
+
+	_ "github.com/go-sql-driver/mysql"
+)
 
 type ProgramLanguage struct {
 	Id        int64
@@ -40,6 +44,21 @@ func TestCount(t *testing.T) {
 		t.FailNow()
 	}
 	t.Log(Count(&GolangWord{}, "where rate>?", 0.5))
+}
+
+func TestTranSelect(t *testing.T) {
+	SetLoggerLevel(DebugLevel)
+	Register("root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8")
+	p := ProgramLanguage{Name: "PHP", Position: 7, RankMonth: time.Now(), Created: time.Now()}
+	tran, err := Begin()
+	fmt.Println(err)
+	tran.Insert(&p)
+	id, err := Insert(&p)
+	if p.Id > 0 {
+		fmt.Println(RollBack(tran))
+	}
+	fmt.Println(Commit(tran))
+	t.Log(id, p.Id)
 }
 
 func TestYorm(t *testing.T) {

@@ -24,17 +24,18 @@ var (
 )
 
 type sqlExecutor interface {
-	SelectByPK(i interface{}, tableName ...string) error
 	Select(i interface{}, clause string, args ...interface{}) error
 	Insert(i interface{}, args ...string) (int64, error)
 	Update(clause string, args ...interface{}) (int64, error)
 	Delete(clause string, args ...interface{}) (int64, error)
-	SetMaxIdleConns(int)
-	SetMaxOpenConns(int)
 }
 
 type executor struct {
 	*sql.DB
+}
+
+type tranExecutor struct {
+	*sql.Tx
 }
 
 //RegisterWithName register a database driver with specific name.
@@ -97,6 +98,25 @@ func Using(name string) sqlExecutor {
 	return nilSqlExecutor{}
 }
 
+func Begin(name ...string) (sqlExecutor, error) {
+	var err error
+	name = append(name, defaultExecutorName)
+	if e, ok := executorMap[name[0]]; ok {
+		var tx *sql.Tx
+		tx, err = e.Begin()
+		if err == nil {
+			return &tranExecutor{tx}, err
+		}
+	}
+	return nilSqlExecutor{}, err
+}
+func Commit(e sqlExecutor) error {
+	return e.(*tranExecutor).Commit()
+}
+func RollBack(e sqlExecutor) error {
+	return e.(*tranExecutor).Rollback()
+}
+
 func (ex *executor) getStmt(clause string) (*sql.Stmt, error) {
 
 	var err error
@@ -126,6 +146,11 @@ func (ex *executor) exec(clause string, args ...interface{}) (sql.Result, error)
 	}
 	yogger.Debug("%s;%v", clause, args)
 	return stmt.Exec(args...)
+}
+
+func (ex *tranExecutor) exec(clause string, args ...interface{}) (sql.Result, error) {
+	yogger.Debug("%s;%v", clause, args)
+	return ex.Exec(clause, args...)
 }
 
 func validClause(clause string) (string, error) {
