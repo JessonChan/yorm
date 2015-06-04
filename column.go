@@ -20,12 +20,20 @@ type column struct {
 	isAuto    bool
 }
 
+type YormTableStruct interface {
+	YormTableName() string
+}
+
 func structToTable(i interface{}) (tableName string, columns []*column) {
 	typ := reflect.TypeOf(i)
 	if typ.Kind() != reflect.Struct {
 		return
 	}
-	return camelToUnderscore(typ.Name()), structColumns(typ)
+	tableName = camelToUnderscore(typ.Name())
+	if yt, ok := i.(YormTableStruct); ok {
+		tableName = yt.YormTableName()
+	}
+	return tableName, structColumns(typ)
 }
 
 func structColumns(t reflect.Type) (columns []*column) {
