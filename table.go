@@ -28,6 +28,11 @@ var (
 
 func newTableSetter(ri reflect.Value) (*tableSetter, error) {
 	if q, ok := tableMap[ri]; ok {
+		//		if t, ok := ri.Interface().(YormTableStruct); ok {
+		//			returnValue := *q
+		//			returnValue.table = t.YormTableName()
+		//			return &returnValue, nil
+		//		}
 		return q, nil
 	}
 	tableRWLock.Lock()
