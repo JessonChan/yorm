@@ -45,7 +45,7 @@ func structColumns(t reflect.Type) (columns []*column) {
 	}
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
-		//unexpected struct type,ommit
+		//unexpected struct type,omit
 		if field.PkgPath != "" {
 			continue
 		}
