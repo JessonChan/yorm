@@ -51,7 +51,6 @@ func newTableSetter(ri reflect.Value) (*tableSetter, error) {
 	var err error
 	q.pkColumn, err = findPkColumn(cs)
 	if q.pkColumn == nil {
-		tableMap[ri] = nil
 		return nil, err
 	}
 	q.table = table
