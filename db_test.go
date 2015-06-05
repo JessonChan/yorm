@@ -77,7 +77,12 @@ func TestYorm(t *testing.T) {
 		t.FailNow()
 	}
 	t.Log(p)
-	Using("write").Update("update program_language set position=? where id=? ", 12, p.Id)
+	_, err = Using("write").Update("update program_language set position=? where id=? ", 12, p.Id)
+
+	if err != nil {
+		t.Log(err)
+		t.FailNow()
+	}
 
 	var p1 ProgramLanguage
 	Using("read").Select(&p1, "select * from program_language where id=?", p.Id)
