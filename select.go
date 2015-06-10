@@ -298,7 +298,10 @@ func convertAssignRows(i interface{}, rows *sql.Rows) error {
 			}
 		} else {
 			ti := newPtrInterface(typ)
-			rows.Scan(ti)
+			err := rows.Scan(ti)
+			if err != nil {
+				return err
+			}
 			setValue(st, ti)
 		}
 		v.Index(size).Set(st)
