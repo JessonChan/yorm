@@ -95,6 +95,8 @@ func newPtrInterface(t reflect.Type) interface{} {
 	k := t.Kind()
 	var ti interface{}
 	switch k {
+	case reflect.Bool:
+		fallthrough
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		fallthrough
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
@@ -130,7 +132,14 @@ func scanValue(sc sqlScanner, q *tableSetter, st reflect.Value) error {
 }
 
 func setValue(fv reflect.Value, fi interface{}) error {
-	switch fv.Type().Kind() {
+	switch typ := fv.Type().Kind(); typ {
+	case reflect.Bool:
+		sqlValue := sql.NullInt64(*(fi.(*sql.NullInt64)))
+		if !sqlValue.Valid {
+			fv.SetBool(false)
+			return errors.New("sqlValue is invalid")
+		}
+		fv.SetBool(sqlValue.Int64 > 0)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		fallthrough
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
