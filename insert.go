@@ -55,6 +55,7 @@ func (ex *executor) Insert(i interface{}, args ...string) (int64, error) {
 			continue
 		}
 		vi := v.Interface()
+		fmt.Println("haha", v.Type())
 		if typ := v.Type(); typ == TimeType {
 			//zero time ,skip insert
 			if vi.(time.Time).IsZero() {
