@@ -55,7 +55,7 @@ func (ex *executor) Insert(i interface{}, args ...string) (int64, error) {
 			continue
 		}
 		vi := v.Interface()
-		switch v.Type().Kind() {
+		switch v.Type() {
 
 		case TimeType:
 			//zero time ,skip insert
