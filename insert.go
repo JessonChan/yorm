@@ -55,12 +55,21 @@ func (ex *executor) Insert(i interface{}, args ...string) (int64, error) {
 			continue
 		}
 		vi := v.Interface()
-		if v.Type() == TimeType {
+		switch v.Type() {
+
+		case TimeType:
 			//zero time ,skip insert
 			if vi.(time.Time).IsZero() {
 				continue
 			}
 			vi = vi.(time.Time).Format(longSimpleTimeFormat)
+
+		case reflect.Bool:
+			if vi.(bool) {
+				vi = 1
+			} else {
+				vi = 0
+			}
 		}
 
 		fs.WriteString("," + c.name + "=?")
