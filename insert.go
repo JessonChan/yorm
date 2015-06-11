@@ -55,7 +55,7 @@ func (ex *executor) Insert(i interface{}, args ...string) (int64, error) {
 			continue
 		}
 		vi := v.Interface()
-		switch v.Type() {
+		switch v.Type().Kind() {
 
 		case TimeType:
 			//zero time ,skip insert
@@ -64,7 +64,7 @@ func (ex *executor) Insert(i interface{}, args ...string) (int64, error) {
 			}
 			vi = vi.(time.Time).Format(longSimpleTimeFormat)
 
-		case reflect.Bool:
+		case BoolType:
 			if vi.(bool) {
 				vi = 1
 			} else {
