@@ -12,12 +12,12 @@ import (
 
 //Insert  return lastInsertId and error if has
 func (ex *executor) Insert(i interface{}, args ...string) (int64, error) {
-	return insertExec(ex.exec, i, args)
+	return insertExec(ex.exec, i, args...)
 }
 
 //Insert  return lastInsertId and error if has
 func (ex *tranExecutor) Insert(i interface{}, args ...string) (int64, error) {
-	return insertExec(ex.exec, i, args)
+	return insertExec(ex.exec, i, args...)
 }
 
 //Insert insert a record.
