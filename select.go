@@ -35,6 +35,9 @@ func (ex *executor) SelectByPK(i interface{}, tableName ...string) error {
 	if q == nil {
 		return err
 	}
+	if q.pkColumn == nil {
+		return nil, ErrNonePkColumn
+	}
 	table := q.table
 	if len(tableName) > 0 {
 		table = tableName[0]
