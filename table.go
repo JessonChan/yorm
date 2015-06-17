@@ -49,11 +49,7 @@ func newTableSetter(ri reflect.Value) (*tableSetter, error) {
 	}
 	q := new(tableSetter)
 	table, cs := structToTable(reflect.Indirect(ri).Interface())
-	var err error
-	q.pkColumn, err = findPkColumn(cs)
-//	if q.pkColumn == nil {
-//		return nil, err
-//	}
+	q.pkColumn, _ = findPkColumn(cs)
 	q.table = table
 	q.columns = cs
 	q.dests = make([]interface{}, len(cs))
