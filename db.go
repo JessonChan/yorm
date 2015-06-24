@@ -38,6 +38,18 @@ type tranExecutor struct {
 	*sql.Tx
 }
 
+var tableFunc = func(table string) string {
+	return table
+}
+
+/*
+  table func 可以根据项目需要定制不同的model对应表名，比如添加前缀、后缀；删除model中的前缀等
+  对于实现了YormTableStruct (	YormTableName() string)则不会去处理
+*/
+func RegisterTableFunc(fn func(string) string) {
+	tableFunc = fn
+}
+
 //RegisterWithName register a database driver with specific name.
 func RegisterWithName(dsn, name string, driver ...string) (err error) {
 	if executorMap[name] != nil {
