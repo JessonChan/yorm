@@ -258,7 +258,7 @@ func newTableSetterBySlice(i interface{}) (reflect.Type, *tableSetter, error) {
 		return nil, nil, ErrNonSlice
 	}
 	typ = typ.Elem()
-	if typ.Kind() == reflect.Struct {
+	if typ.Kind() == reflect.Struct && typ != TimeType {
 		q, e := newTableSetter(reflect.New(typ))
 		return typ, q, e
 	} else {
