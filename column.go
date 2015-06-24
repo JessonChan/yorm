@@ -29,10 +29,10 @@ func structToTable(i interface{}) (tableName string, columns []*column) {
 	if typ.Kind() != reflect.Struct {
 		return
 	}
-	tableName = camelToUnderscore(typ.Name())
 	if yt, ok := i.(YormTableStruct); ok {
 		tableName = yt.YormTableName()
 	} else {
+		tableName = camelToUnderscore(typ.Name())
 		tableName = tableFunc(tableName)
 	}
 	return tableName, structColumns(typ)
