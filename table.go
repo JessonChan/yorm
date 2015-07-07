@@ -1,8 +1,11 @@
 package yorm
 
 import (
+	"database/sql"
+	"errors"
 	"reflect"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -16,34 +19,44 @@ type tableSetter struct {
 var (
 	//TimeType time's reflect type.
 	TimeType = reflect.TypeOf(time.Time{})
+	BoolType = reflect.TypeOf(true)
 
 	// one struct reflect to a table query setter
 	tableMap = map[reflect.Value]*tableSetter{}
+	//table lock
+	tableRWLock sync.RWMutex
 )
 
 func newTableSetter(ri reflect.Value) (*tableSetter, error) {
 	if q, ok := tableMap[ri]; ok {
+		//		if t, ok := ri.Interface().(YormTableStruct); ok {
+		//			returnValue := *q
+		//			returnValue.table = t.YormTableName()
+		//			return &returnValue, nil
+		//		}
 		return q, nil
 	}
-	if ri.Kind() != reflect.Ptr || ri.IsNil() {
+	tableRWLock.Lock()
+	defer tableRWLock.Unlock()
+	if q, ok := tableMap[ri]; ok {
+		return q, nil
+	}
+	if ri.Kind() != reflect.Ptr {
+		return nil, ErrNonPtr
+	}
+	if ri.IsNil() {
 		return nil, ErrNotSupported
 	}
 	q := new(tableSetter)
-	defer func() {
-		tableMap[ri] = q
-	}()
 	table, cs := structToTable(reflect.Indirect(ri).Interface())
-	var err error
-	q.pkColumn, err = findPkColumn(cs)
-	if q.pkColumn == nil {
-		return nil, err
-	}
+	q.pkColumn, _ = findPkColumn(cs)
 	q.table = table
 	q.columns = cs
 	q.dests = make([]interface{}, len(cs))
 	for k, v := range cs {
 		q.dests[k] = newPtrInterface(v.typ)
 	}
+	tableMap[ri] = q
 	return q, nil
 }
 
@@ -64,7 +77,9 @@ func findPkColumn(cs []*column) (*column, error) {
 			c = v
 		}
 	}
-	if c == nil {
+	if c == nil && idColumn != nil {
+		idColumn.isPK = true
+		idColumn.isAuto = true
 		c = idColumn
 	}
 	if c == nil {
@@ -77,20 +92,20 @@ func newPtrInterface(t reflect.Type) interface{} {
 	k := t.Kind()
 	var ti interface{}
 	switch k {
-	case reflect.Int:
-		ti = new(int)
-	case reflect.Int64:
-		ti = new(int64)
+	case reflect.Bool:
+		fallthrough
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		fallthrough
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		ti = new(sql.NullInt64)
 	case reflect.String:
-		ti = new(string)
-	case reflect.Float32:
-		ti = new(float32)
-	case reflect.Float64:
-		ti = new(float64)
+		ti = new(sql.NullString)
+	case reflect.Float32, reflect.Float64:
+		ti = new(sql.NullFloat64)
 	case reflect.Struct:
 		switch t {
 		case TimeType:
-			ti = new(string)
+			ti = new(sql.NullString)
 		}
 	}
 	return ti
@@ -103,34 +118,68 @@ func scanValue(sc sqlScanner, q *tableSetter, st reflect.Value) error {
 	}
 	for idx, c := range q.columns {
 		// different assign func here
-		switch c.typ.Kind() {
-		case reflect.Int:
-			st.Field(c.fieldNum).SetInt(int64(*(q.dests[idx].(*int))))
-		case reflect.Int64:
-			st.Field(c.fieldNum).SetInt(int64(*(q.dests[idx].(*int64))))
-		case reflect.String:
-			st.Field(c.fieldNum).SetString(string(*(q.dests[idx].(*string))))
-		case reflect.Float32:
-			st.Field(c.fieldNum).SetFloat(float64(*(q.dests[idx].(*float32))))
-		case reflect.Float64:
-			st.Field(c.fieldNum).SetFloat(float64(*(q.dests[idx].(*float64))))
-		case reflect.Struct:
-			switch c.typ {
-			case TimeType:
-				timeStr := string(*(q.dests[idx].(*string)))
-				var layout string
-				if len(timeStr) == 10 {
-					layout = "2006-01-02"
-				}
-				if len(timeStr) == 19 {
-					layout = "2006-01-02 15:04:05"
-				}
-				timeTime, err := time.ParseInLocation(layout, timeStr, time.Local)
-				if timeTime.IsZero() {
-					return err
-				}
-				st.Field(c.fieldNum).Set(reflect.ValueOf(timeTime))
+		fv := st.Field(c.fieldNum)
+		fi := q.dests[idx]
+		err := setValue(fv, fi)
+		if err != nil {
+			continue
+		}
+	}
+	return nil
+}
+
+func setValue(fv reflect.Value, fi interface{}) error {
+	switch typ := fv.Type().Kind(); typ {
+	case reflect.Bool:
+		sqlValue := sql.NullInt64(*(fi.(*sql.NullInt64)))
+		if !sqlValue.Valid {
+			fv.SetBool(false)
+			return errors.New("sqlValue is invalid")
+		}
+		fv.SetBool(sqlValue.Int64 > 0)
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		fallthrough
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		sqlValue := sql.NullInt64(*(fi.(*sql.NullInt64)))
+		if !sqlValue.Valid {
+			fv.SetInt(0)
+			return errors.New("sqlValue is invalid")
+		}
+		fv.SetInt(sqlValue.Int64)
+	case reflect.String:
+		sqlValue := sql.NullString(*(fi.(*sql.NullString)))
+		if !sqlValue.Valid {
+			fv.SetString("")
+			return errors.New("sqlValue is invalid")
+		}
+		fv.SetString(sqlValue.String)
+	case reflect.Float32, reflect.Float64:
+		sqlValue := sql.NullFloat64(*(fi.(*sql.NullFloat64)))
+		if !sqlValue.Valid {
+			fv.SetFloat(0.0)
+			return errors.New("sqlValue is invalid")
+		}
+		fv.SetFloat(sqlValue.Float64)
+	case reflect.Struct:
+		switch fv.Type() {
+		case TimeType:
+			sqlValue := sql.NullString(*(fi.(*sql.NullString)))
+			if !sqlValue.Valid {
+				return errors.New("sqlValue is invalid")
 			}
+			timeStr := sqlValue.String
+			var layout string
+			if len(timeStr) == 10 {
+				layout = shortSimpleTimeFormat
+			}
+			if len(timeStr) == 19 {
+				layout = longSimpleTimeFormat
+			}
+			timeTime, err := time.ParseInLocation(layout, timeStr, time.Local)
+			if timeTime.IsZero() {
+				return err
+			}
+			fv.Set(reflect.ValueOf(timeTime))
 		}
 	}
 	return nil

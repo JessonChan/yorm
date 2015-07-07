@@ -1,9 +1,6 @@
 package yorm
 
-import (
-	"reflect"
-	"time"
-)
+import "reflect"
 
 //field name
 const (
@@ -19,8 +16,12 @@ type column struct {
 	fieldName string
 	name      string
 	typ       reflect.Type
-	isInner   bool //inner struct ?
 	isPK      bool
+	isAuto    bool
+}
+
+type YormTableStruct interface {
+	YormTableName() string
 }
 
 func structToTable(i interface{}) (tableName string, columns []*column) {
@@ -28,7 +29,13 @@ func structToTable(i interface{}) (tableName string, columns []*column) {
 	if typ.Kind() != reflect.Struct {
 		return
 	}
-	return camelToUnderscore(typ.Name()), structColumns(typ)
+	if yt, ok := i.(YormTableStruct); ok {
+		tableName = yt.YormTableName()
+	} else {
+		tableName = camelToUnderscore(typ.Name())
+		tableName = tableFunc(tableName)
+	}
+	return tableName, structColumns(typ)
 }
 
 func structColumns(t reflect.Type) (columns []*column) {
@@ -40,33 +47,24 @@ func structColumns(t reflect.Type) (columns []*column) {
 	}
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
-		//unexpected struct type,ommit
+		//unexpected struct type,omit
 		if field.PkgPath != "" {
 			continue
 		}
-
 		fieldType := field.Type
+		if fieldType.Kind() == reflect.Struct {
+			if fieldType != TimeType {
+				continue
+			}
+		}
 		tag := parseTag(field.Tag.Get("yorm"))
 		if tag.skip {
 			continue
 		}
-		//todo if ft is ptr'ptr or three deep ptr?
-		if fieldType.Name() == "" && fieldType.Kind() == reflect.Ptr {
-			fieldType = fieldType.Elem()
-		}
 		name := camelToUnderscore(field.Name)
-		var isInner bool
 		if tag.columnIsSet {
 			if tag.columnName != "" {
 				name = tag.columnName
-			}
-		} else {
-			if fieldType.Kind() == reflect.Struct {
-				if fieldType.Kind() == reflect.TypeOf(time.Time{}).Kind() {
-				} else {
-					isInner = true
-				}
-
 			}
 		}
 		c := &column{
@@ -74,15 +72,10 @@ func structColumns(t reflect.Type) (columns []*column) {
 			fieldName: field.Name,
 			name:      name,
 			typ:       fieldType,
-			isInner:   isInner,
 			isPK:      tag.pkIsSet,
+			isAuto:    tag.autoIsSet,
 		}
-		if c.isInner {
-			// recursive unwind  inner struct
-			columns = append(columns, structColumns(c.typ)...)
-		} else {
-			columns = append(columns, c)
-		}
+		columns = append(columns, c)
 	}
 	if len(columns) > 0 {
 		structColumnCache[t] = columns

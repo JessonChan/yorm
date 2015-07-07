@@ -1,21 +1,26 @@
 package yorm
 
-import "strings"
+import (
+	"database/sql"
+	"strings"
+)
 
 func (ex *executor) Update(clause string, args ...interface{}) (int64, error) {
+	return update(ex.exec, clause, args...)
+}
+func (ex *tranExecutor) Update(clause string, args ...interface{}) (int64, error) {
+	return update(ex.exec, clause, args...)
+}
+
+func update(exec func(clause string, args ...interface{}) (sql.Result, error), clause string, args ...interface{}) (int64, error) {
 	if !strings.HasPrefix(strings.ToUpper(clause), "UPDATE") {
 		return 0, ErrUpdateBadSql
 	}
-	stmt, err := ex.getStmt(clause)
+	r, err := exec(clause, args...)
 	if err != nil {
 		return 0, err
 	}
-	r, err := stmt.Exec(args...)
-	if err != nil {
-		return 0, err
-	}
-	id, err := r.RowsAffected()
-	return id, err
+	return r.RowsAffected()
 }
 
 //Update update record(s)

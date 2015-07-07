@@ -16,19 +16,23 @@ more about the detail, cc [https://github.com/lewgun]
 Now support these types of tag.
 
 ### column ###
-this tag alias struct name to a real column name. "Id int \`yorm:column(autoId)\`" means this field Id will name autoId in mysql column
+this tag alias struct name to a real column name. "Id int \`yorm:"column(autoId)"\`" means this field Id will name autoId in mysql column
 
 ### pk ###
-this tag allow you to set a primary key where select/delete/update as the where clause  "Id int \`yorm:column(autoId);pk\`"
+this tag allow you to set a primary key where select/delete/update as the where clause  "Id int \`yorm:"column(autoId);pk"\`"
 
 
 # benchmark #
 
-select by id with five fields
+select by id with five fields execute 1e5 times (not very accurate)
 
-> beegoOrm 13376 microsecond   
->     xorm 16718 microsecond   
->     yorm 6759 microsecond   
+> beegoOrm 13376 milliseconds   
+>     xorm 16718 milliseconds   
+>     yorm 6759 milliseconds    
+
+> beegoOrm 14149 milliseconds   
+>     xorm 17685 milliseconds   
+>     yorm 7568 milliseconds   
 
 code is here:
 
@@ -74,9 +78,9 @@ func init() {
 
 func main() {
 	fastfunc.SetRunTimes(1e5)
-	fmt.Println("beegoOrm", fastfunc.Run(beegoOrm)/1e6, "microsecond")
-	fmt.Println("    xorm", fastfunc.Run(xomrTest)/1e6, "microsecond")
-	fmt.Println("    yorm", fastfunc.Run(yormTest)/1e6, "microsecond")
+	fmt.Println("beegoOrm", fastfunc.Run(beegoOrm)/1e6, "milliseconds")
+	fmt.Println("    xorm", fastfunc.Run(xomrTest)/1e6, "milliseconds")
+	fmt.Println("    yorm", fastfunc.Run(yormTest)/1e6, "milliseconds")
 }
 
 func beegoOrm() {

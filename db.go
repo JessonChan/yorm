@@ -10,6 +10,9 @@ const (
 	//DriverMySQL driver for mysql
 	DriverMySQL         = "mysql"
 	defaultExecutorName = "default"
+
+	shortSimpleTimeFormat = "2006-01-02"
+	longSimpleTimeFormat  = "2006-01-02 15:04:05"
 )
 
 var (
@@ -21,7 +24,6 @@ var (
 )
 
 type sqlExecutor interface {
-	SelectByPK(i interface{}, tableName ...string) error
 	Select(i interface{}, clause string, args ...interface{}) error
 	Insert(i interface{}, args ...string) (int64, error)
 	Update(clause string, args ...interface{}) (int64, error)
@@ -32,14 +34,31 @@ type executor struct {
 	*sql.DB
 }
 
-//RegisterWithName register a database dirver with specific name.
-func RegisterWithName(dsn, name string, driver ...string) error {
+type tranExecutor struct {
+	*sql.Tx
+}
+
+var tableFunc = func(table string) string {
+	return table
+}
+
+/*
+  table func 可以根据项目需要定制不同的model对应表名，比如添加前缀、后缀；删除model中的前缀等
+  对于实现了YormTableStruct (	YormTableName() string)则不会去处理
+*/
+func RegisterTableFunc(fn func(string) string) {
+	tableFunc = fn
+}
+
+//RegisterWithName register a database driver with specific name.
+func RegisterWithName(dsn, name string, driver ...string) (err error) {
 	if executorMap[name] != nil {
 		return nil
 	}
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
-	sqlDb, err := sql.Open(append(driver, DriverMySQL)[0], dsn)
+	var sqlDb *sql.DB
+	sqlDb, err = sql.Open(append(driver, DriverMySQL)[0], dsn)
 	if sqlDb == nil {
 		return err
 	}
@@ -78,6 +97,10 @@ func (n nilSqlExecutor) Update(clause string, args ...interface{}) (int64, error
 func (n nilSqlExecutor) Delete(clause string, args ...interface{}) (int64, error) {
 	return 0, ErrNilSqlExecutor
 }
+func (n nilSqlExecutor) SetMaxOpenConns(int) {
+}
+func (n nilSqlExecutor) SetMaxIdleConns(int) {
+}
 
 //Using using the executor with name, if not exist  nilSqlExecutor instead.
 func Using(name string) sqlExecutor {
@@ -85,6 +108,25 @@ func Using(name string) sqlExecutor {
 		return e
 	}
 	return nilSqlExecutor{}
+}
+
+func Begin(name ...string) (sqlExecutor, error) {
+	var err error
+	name = append(name, defaultExecutorName)
+	if e, ok := executorMap[name[0]]; ok {
+		var tx *sql.Tx
+		tx, err = e.Begin()
+		if err == nil {
+			return &tranExecutor{tx}, err
+		}
+	}
+	return nilSqlExecutor{}, err
+}
+func Commit(e sqlExecutor) error {
+	return e.(*tranExecutor).Commit()
+}
+func RollBack(e sqlExecutor) error {
+	return e.(*tranExecutor).Rollback()
 }
 
 func (ex *executor) getStmt(clause string) (*sql.Stmt, error) {
@@ -104,11 +146,23 @@ func (ex *executor) getStmt(clause string) (*sql.Stmt, error) {
 	return stmt, err
 }
 
-func getStmt(clause string) (*sql.Stmt, error) {
-	if defaultExecutor == nil {
-		return nil, ErrNilSqlExecutor
+func (ex *executor) exec(clause string, args ...interface{}) (sql.Result, error) {
+	//如果是单句执行，不需要再使用stmt，防止过多的prepare
+	if len(args) == 0 {
+		yogger.Debug("%s", clause)
+		return ex.Exec(clause)
 	}
-	return defaultExecutor.getStmt(clause)
+	stmt, err := ex.getStmt(clause)
+	if err != nil {
+		return nil, err
+	}
+	yogger.Debug("%s;%v", clause, args)
+	return stmt.Exec(args...)
+}
+
+func (ex *tranExecutor) exec(clause string, args ...interface{}) (sql.Result, error) {
+	yogger.Debug("%s;%v", clause, args)
+	return ex.Exec(clause, args...)
 }
 
 func validClause(clause string) (string, error) {

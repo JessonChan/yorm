@@ -81,15 +81,15 @@ func TestStructColumns_1(t *testing.T) {
 func TestStructColumns_3(t *testing.T) {
 	testStructColumns(struct{ Name *string }{}, 1, t)
 }
-func TestStructColumns_4(t *testing.T) {
-	type A struct {
-		Id int
-	}
-	type B struct {
-		A
-	}
-	testStructColumns(B{}, 1, t)
-}
+//func TestStructColumns_4(t *testing.T) {
+//	type A struct {
+//		Id int
+//	}
+//	type B struct {
+//		A
+//	}
+//	testStructColumns(B{}, 1, t)
+//}
 
 func TestStructColumns_5(t *testing.T) {
 	type A struct {
@@ -101,15 +101,15 @@ func TestStructColumns_5(t *testing.T) {
 	testStructColumns(B{}, 0, t)
 }
 
-func TestStructColumns_6(t *testing.T) {
-	type A struct {
-		Id int
-	}
-	type B struct {
-		A `yorm:"column(user_name)"`
-	}
-	testStructColumns(B{}, 1, t)
-}
+//func TestStructColumns_6(t *testing.T) {
+//	type A struct {
+//		Id int
+//	}
+//	type B struct {
+//		A `yorm:"column(user_name)"`
+//	}
+//	testStructColumns(B{}, 1, t)
+//}
 func testStructColumns(itf interface{}, numField int, t *testing.T) {
 	cs := structColumns(reflect.TypeOf(itf))
 	for k, v := range cs {

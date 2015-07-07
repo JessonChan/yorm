@@ -2,14 +2,31 @@ package yorm
 
 import (
 	"bytes"
+	"database/sql"
 	"errors"
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 )
 
 //Insert  return lastInsertId and error if has
 func (ex *executor) Insert(i interface{}, args ...string) (int64, error) {
+	return insertExec(ex.exec, i, args...)
+}
+
+//Insert  return lastInsertId and error if has
+func (ex *tranExecutor) Insert(i interface{}, args ...string) (int64, error) {
+	return insertExec(ex.exec, i, args...)
+}
+
+//Insert insert a record.
+func Insert(i interface{}, args ...string) (int64, error) {
+	return defaultExecutor.Insert(i, args...)
+}
+
+//Insert  return lastInsertId and error if has
+func insertExec(exec func(clause string, args ...interface{}) (sql.Result, error), i interface{}, args ...string) (int64, error) {
 
 	q, err := newTableSetter(reflect.ValueOf(i))
 	if q == nil {
@@ -43,15 +60,36 @@ func (ex *executor) Insert(i interface{}, args ...string) (int64, error) {
 		}
 	}
 	for _, c := range columns {
-		//todo this is auto increase field
 		v := e.FieldByName(c.fieldName)
-		if strings.ToLower(c.fieldName) == "id" {
+		//todo how to handle a zero value ???
+		//		if !v.IsValid() {
+		//			continue
+		//		}
+
+		if c.isAuto {
 			pk = v
 			continue
 		}
+		vi := v.Interface()
+		switch v.Type() {
+
+		case TimeType:
+			//zero time ,skip insert
+			if vi.(time.Time).IsZero() {
+				continue
+			}
+			vi = vi.(time.Time).Format(longSimpleTimeFormat)
+
+		case BoolType:
+			if vi.(bool) {
+				vi = 1
+			} else {
+				vi = 0
+			}
+		}
 
 		fs.WriteString("," + c.name + "=?")
-		dests = append(dests, fmt.Sprintf("%v", v.Interface()))
+		dests = append(dests, fmt.Sprintf("%v", vi))
 	}
 	if fs.Len() == 0 {
 		return 0, errors.New("no filed to insert")
@@ -59,11 +97,7 @@ func (ex *executor) Insert(i interface{}, args ...string) (int64, error) {
 
 	clause.Write(fs.Bytes()[1:])
 
-	stmt, err := getStmt(clause.String())
-	if err != nil {
-		return 0, err
-	}
-	r, err := stmt.Exec(dests...)
+	r, err := exec(clause.String(), dests...)
 	if err != nil {
 		return 0, err
 	}
@@ -72,9 +106,4 @@ func (ex *executor) Insert(i interface{}, args ...string) (int64, error) {
 		pk.SetInt(id)
 	}
 	return id, err
-}
-
-//Insert insert a record.
-func Insert(i interface{}, args ...string) (int64, error) {
-	return defaultExecutor.Insert(i, args...)
 }
