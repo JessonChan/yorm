@@ -30,6 +30,8 @@ type sqlExecutor interface {
 	Delete(clause string, args ...interface{}) (int64, error)
 }
 
+type ExecHandler func(clause string, args ...interface{}) (sql.Result, error)
+
 type executor struct {
 	*sql.DB
 }
@@ -149,19 +151,19 @@ func (ex *executor) getStmt(clause string) (*sql.Stmt, error) {
 func (ex *executor) exec(clause string, args ...interface{}) (sql.Result, error) {
 	//如果是单句执行，不需要再使用stmt，防止过多的prepare
 	if len(args) == 0 {
-		yogger.Debug("%s", clause)
+		log.Debug("%s", clause)
 		return ex.Exec(clause)
 	}
 	stmt, err := ex.getStmt(clause)
 	if err != nil {
 		return nil, err
 	}
-	yogger.Debug("%s;%v", clause, args)
+	log.Debug("%s;%v", clause, args)
 	return stmt.Exec(args...)
 }
 
 func (ex *tranExecutor) exec(clause string, args ...interface{}) (sql.Result, error) {
-	yogger.Debug("%s;%v", clause, args)
+	log.Debug("%s;%v", clause, args)
 	return ex.Exec(clause, args...)
 }
 

@@ -29,7 +29,7 @@ type ProgramLanguage struct {
 }
 
 func main() {
-	yorm.SetLoggerLevel(yorm.DebugLevel)
+	yorm.SetLoggerLevel(yorm.Debug)
 	//设置自己的数据地址
 	yorm.Register("root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8")
 
