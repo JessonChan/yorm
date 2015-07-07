@@ -62,9 +62,9 @@ func Count(i interface{}, where ...interface{}) int64 {
 	}
 	var count int64
 	if len(where) > 0 {
-		Select(&count, fmt.Sprintf("select count(0) from %s %s", q.table, where[0].(string)), where[1:]...)
+		Select(&count, fmt.Sprintf("SELECT count(0) FROM %s %s", q.table, where[0].(string)), where[1:]...)
 	} else {
-		Select(&count, fmt.Sprintf("select count(0) from %s", q.table))
+		Select(&count, fmt.Sprintf("SELECT count(0) FROM %s", q.table))
 	}
 	return count
 }
@@ -188,7 +188,7 @@ func (ex *tranExecutor) query(i interface{}, query string, args ...interface{}) 
 		query = strings.Replace(query, "*", buildFullColumnSql(q), -1)
 	}
 
-	yogger.Debug("%s;%v", query, args)
+	log.Debug("%s;%v", query, args)
 	if typ.Kind() == reflect.Slice {
 		rows, err := ex.Query(query, args...)
 		if rows == nil {
@@ -219,7 +219,7 @@ func (ex *executor) query(i interface{}, query string, args ...interface{}) erro
 
 	var err error
 	var stmt *sql.Stmt
-	yogger.Debug("%s;%v", query, args)
+	log.Debug("%s;%v", query, args)
 	stmt, err = ex.getStmt(query)
 	if stmt == nil {
 		return err

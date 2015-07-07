@@ -8,6 +8,6 @@ type Table struct {
 }
 
 func TestInsert(t *testing.T) {
-//	ta:=Table{Name:"jc"}
-//	Insert(&ta)
+	//	ta:=Table{Name:"jc"}
+	//	Insert(&ta)
 }

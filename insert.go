@@ -2,7 +2,6 @@ package yorm
 
 import (
 	"bytes"
-	"database/sql"
 	"errors"
 	"fmt"
 	"reflect"
@@ -26,7 +25,7 @@ func Insert(i interface{}, args ...string) (int64, error) {
 }
 
 //Insert  return lastInsertId and error if has
-func insertExec(exec func(clause string, args ...interface{}) (sql.Result, error), i interface{}, args ...string) (int64, error) {
+func insertExec(exec ExecHandler, i interface{}, args ...string) (int64, error) {
 
 	q, err := newTableSetter(reflect.ValueOf(i))
 	if q == nil {

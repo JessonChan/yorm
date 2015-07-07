@@ -26,6 +26,7 @@ func TestStructToTable_3(t *testing.T) {
 	}
 	testStructToTable(t, A{}, "a", 2)
 }
+
 //func TestStructToTable_4(t *testing.T) {
 //	type A struct {
 //		Id   int64
@@ -81,6 +82,7 @@ func TestStructColumns_1(t *testing.T) {
 func TestStructColumns_3(t *testing.T) {
 	testStructColumns(struct{ Name *string }{}, 1, t)
 }
+
 //func TestStructColumns_4(t *testing.T) {
 //	type A struct {
 //		Id int

@@ -1,7 +1,6 @@
 package yorm
 
 import (
-	"database/sql"
 	"errors"
 	"strings"
 )
@@ -19,7 +18,7 @@ func (ex *tranExecutor) Delete(clause string, args ...interface{}) (int64, error
 	return deleteExec(ex.exec, clause, args...)
 }
 
-func deleteExec(exec func(clause string, args ...interface{}) (sql.Result, error), clause string, args ...interface{}) (int64, error) {
+func deleteExec(exec ExecHandler, clause string, args ...interface{}) (int64, error) {
 	if !strings.HasPrefix(strings.ToUpper(clause), "DELETE") {
 		return 0, errors.New("must be begin with delete keyword")
 	}

@@ -130,6 +130,7 @@ func scanValue(sc sqlScanner, q *tableSetter, st reflect.Value) error {
 
 func setValue(fv reflect.Value, fi interface{}) error {
 	switch typ := fv.Type().Kind(); typ {
+
 	case reflect.Bool:
 		sqlValue := sql.NullInt64(*(fi.(*sql.NullInt64)))
 		if !sqlValue.Valid {
@@ -137,8 +138,10 @@ func setValue(fv reflect.Value, fi interface{}) error {
 			return errors.New("sqlValue is invalid")
 		}
 		fv.SetBool(sqlValue.Int64 > 0)
+
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		fallthrough
+
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		sqlValue := sql.NullInt64(*(fi.(*sql.NullInt64)))
 		if !sqlValue.Valid {
@@ -146,6 +149,7 @@ func setValue(fv reflect.Value, fi interface{}) error {
 			return errors.New("sqlValue is invalid")
 		}
 		fv.SetInt(sqlValue.Int64)
+
 	case reflect.String:
 		sqlValue := sql.NullString(*(fi.(*sql.NullString)))
 		if !sqlValue.Valid {
@@ -153,6 +157,7 @@ func setValue(fv reflect.Value, fi interface{}) error {
 			return errors.New("sqlValue is invalid")
 		}
 		fv.SetString(sqlValue.String)
+
 	case reflect.Float32, reflect.Float64:
 		sqlValue := sql.NullFloat64(*(fi.(*sql.NullFloat64)))
 		if !sqlValue.Valid {
@@ -160,6 +165,7 @@ func setValue(fv reflect.Value, fi interface{}) error {
 			return errors.New("sqlValue is invalid")
 		}
 		fv.SetFloat(sqlValue.Float64)
+
 	case reflect.Struct:
 		switch fv.Type() {
 		case TimeType:

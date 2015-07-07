@@ -1,59 +1,67 @@
 package yorm
 
-import "fmt"
+import (
+	"fmt"
+)
 
-type loggerInterface interface {
+type Logger interface {
 	Debug(string, ...interface{})
 	Warn(string, ...interface{})
 	Error(string, ...interface{})
 }
 
-var yogger loggerInterface = &yormLogger{}
-var loggerLevel = ""
+var log Logger = &yormLogger{}
 
 var (
-	CloseLevel = ""
-	DebugLevel = "Debug"
-	WarnLevel  = "Warn"
-	ErrorLevel = "Error"
+	Close = ""
+	Debug = "Debug"
+	Warn  = "Warn"
+	Error = "Error"
+
+	level = Close
 )
 
-var lmap = map[string]int{CloseLevel: 100, DebugLevel: 1, WarnLevel: 7, ErrorLevel: 14}
+var lmap = map[string]int{
+	Close: 100,
+	Debug: 1,
+	Warn:  7,
+	Error: 14}
 
 type yormLogger struct {
 }
 
-func InitLogger(l loggerInterface) {
-	yogger = l
+func InitLogger(l Logger) {
+	log = l
 }
 
 func SetLoggerLevel(s string) {
 	switch s {
-	case CloseLevel, DebugLevel, WarnLevel, ErrorLevel:
-		loggerLevel = s
+	case Close, Debug, Warn, Error:
+		level = s
+
 	default:
 	}
 }
 
-func writeMsg(l string, s string, f ...interface{}) {
-	if lmap[loggerLevel] > lmap[l] {
+func writeMsg(lv string, s string, f ...interface{}) {
+	if lmap[level] > lmap[lv] {
 		return
 	}
 	msg := s
 	if len(f) > 0 {
 		msg = fmt.Sprintf(s, f...)
 	}
-	fmt.Printf("[%s] %s\n", l, msg)
+	fmt.Printf("[%s] %s\n", lv, msg)
 }
 
-func (yl *yormLogger) Debug(s string, f ...interface{}) {
-	writeMsg(DebugLevel, s, f...)
+func (y *yormLogger) Debug(s string, f ...interface{}) {
+	writeMsg(Debug, s, f...)
 }
 
-func (yl *yormLogger) Warn(s string, f ...interface{}) {
-	writeMsg(WarnLevel, s, f...)
+func (y *yormLogger) Warn(s string, f ...interface{}) {
+	writeMsg(Warn, s, f...)
 }
 
-func (yl *yormLogger) Error(s string, f ...interface{}) {
-	writeMsg(ErrorLevel, s, f...)
+func (y *yormLogger) Error(s string, f ...interface{}) {
+	writeMsg(Error, s, f...)
 }

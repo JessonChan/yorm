@@ -34,7 +34,7 @@ type A struct {
 }
 
 func TestCount(t *testing.T) {
-	SetLoggerLevel(DebugLevel)
+	SetLoggerLevel(Debug)
 	Register("root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8")
 	//	t.Log(Count(&GolangWord{}))
 	var c int64
@@ -47,7 +47,7 @@ func TestCount(t *testing.T) {
 }
 
 func TestTranSelect(t *testing.T) {
-	SetLoggerLevel(DebugLevel)
+	SetLoggerLevel(Debug)
 	Register("root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8")
 	p := ProgramLanguage{Name: "PHP", Position: 7, RankMonth: time.Now(), Created: time.Now()}
 	tran, err := Begin()
@@ -62,7 +62,7 @@ func TestTranSelect(t *testing.T) {
 }
 
 func TestYorm(t *testing.T) {
-	SetLoggerLevel(DebugLevel)
+	SetLoggerLevel(Debug)
 	err := Register("root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8")
 	if err != nil {
 		t.Log(err)
@@ -149,7 +149,7 @@ func TestSelectByPk(t *testing.T) {
 }
 
 func TestListSelect(t *testing.T) {
-	SetLoggerLevel(DebugLevel)
+	SetLoggerLevel(Debug)
 	Register("root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8")
 	var ps []ProgramLanguage
 	err := Select(&ps, "select * from program_language")
@@ -170,7 +170,7 @@ func TestSelectIdList(t *testing.T) {
 }
 
 func TestSMethod(t *testing.T) {
-	SetLoggerLevel(DebugLevel)
+	SetLoggerLevel(Debug)
 	Register("root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8")
 	var ps []ProgramLanguage
 	err := R(&ps)
