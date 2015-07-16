@@ -18,6 +18,9 @@ type column struct {
 	typ       reflect.Type
 	isPK      bool
 	isAuto    bool
+	isSql     bool
+	sql       string
+	sqlTyp    reflect.Type
 }
 
 type YormTableStruct interface {
@@ -74,6 +77,12 @@ func structColumns(t reflect.Type) (columns []*column) {
 			typ:       fieldType,
 			isPK:      tag.pkIsSet,
 			isAuto:    tag.autoIsSet,
+			isSql:     tag.sqlIsSet,
+			sql:       tag.sql,
+		}
+		if c.isSql {
+			c.typ = Int64Type
+			c.sqlTyp = fieldType
 		}
 		columns = append(columns, c)
 	}

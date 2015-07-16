@@ -27,6 +27,22 @@ func TestStructToTable_3(t *testing.T) {
 	testStructToTable(t, A{}, "a", 2)
 }
 
+func TestStructToTable_4(t *testing.T) {
+	type A struct {
+		Id   int64
+		Name string
+	}
+	type B struct {
+		Id    int64
+		Model *A `yorm:"column(a);sql(select * table where id=?)"`
+	}
+	n, cs := structToTable(B{})
+	t.Log(n, cs,len(cs))
+	for _,c:=range cs{
+		t.Log(*c)
+	}
+}
+
 //func TestStructToTable_4(t *testing.T) {
 //	type A struct {
 //		Id   int64
