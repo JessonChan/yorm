@@ -50,6 +50,9 @@ func newTableSetter(ri reflect.Value) (*tableSetter, error) {
 	}
 	q := new(tableSetter)
 	table, cs := structToTable(reflect.Indirect(ri).Interface())
+	if len(cs) == 0 {
+		return nil, ErrNotSupported
+	}
 	q.pkColumn, _ = findPkColumn(cs)
 	q.table = table
 	q.columns = cs
