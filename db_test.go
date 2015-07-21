@@ -49,16 +49,18 @@ func TestCount(t *testing.T) {
 func TestTranSelect(t *testing.T) {
 	SetLoggerLevel(Debug)
 	Register("root:@tcp(127.0.0.1:3306)/yorm_test?charset=utf8")
-	p := ProgramLanguage{Name: "PHP", Position: 7, RankMonth: time.Now(), Created: time.Now()}
+	var name = "rus\"'t"
+	ps := []ProgramLanguage{{Name: name, Position: 7, RankMonth: time.Now(), Created: time.Now()}}
 	tran, err := Begin()
-	fmt.Println(err)
-	tran.Insert(&p)
-	id, err := Insert(&p)
-	if p.Id > 0 {
-		fmt.Println(RollBack(tran))
+	i, err := tran.Insert(&ps)
+	Commit(tran)
+	fmt.Print(i, err)
+	ps = []ProgramLanguage{}
+	Select(&ps, "select * from program_language where name=? ", name)
+	if len(ps) != 1 {
+		t.Fail()
 	}
-	fmt.Println(Commit(tran))
-	t.Log(id, p.Id)
+	Delete("delete from program_language where name=? ", name)
 }
 
 func TestYorm(t *testing.T) {

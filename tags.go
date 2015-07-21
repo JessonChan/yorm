@@ -8,10 +8,14 @@ type columnTag struct {
 	defaultValueIsSet bool
 	pkIsSet           bool
 	autoIsSet         bool
+	sqlIsSet          bool
 
+	sql          string
 	columnName   string
 	defaultValue string
+
 }
+
 
 //parse value like column(name) ,return name
 func parseBracketsValue(toParse, key string) (value string, isSet bool) {
@@ -57,6 +61,14 @@ func parseTag(tagStr string) (t columnTag) {
 			isAuto = false
 			continue
 		}
+
+		if !t.sqlIsSet {
+			t.sql, t.sqlIsSet = parseBracketsValue(tag, "sql")
+			if t.sqlIsSet {
+				continue
+			}
+		}
+
 		if !t.columnIsSet {
 			t.columnName, t.columnIsSet = parseBracketsValue(tag, "column")
 			if t.columnIsSet {

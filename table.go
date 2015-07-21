@@ -18,8 +18,10 @@ type tableSetter struct {
 
 var (
 	//TimeType time's reflect type.
-	TimeType = reflect.TypeOf(time.Time{})
-	BoolType = reflect.TypeOf(true)
+	TimeType   = reflect.TypeOf(time.Time{})
+	BoolType   = reflect.TypeOf(true)
+	Int64Type  = reflect.TypeOf(int64(0))
+	StringType = reflect.TypeOf("")
 
 	// one struct reflect to a table query setter
 	tableMap = map[reflect.Value]*tableSetter{}
@@ -49,6 +51,9 @@ func newTableSetter(ri reflect.Value) (*tableSetter, error) {
 	}
 	q := new(tableSetter)
 	table, cs := structToTable(reflect.Indirect(ri).Interface())
+	if len(cs) == 0 {
+		return nil, ErrNotSupported
+	}
 	q.pkColumn, _ = findPkColumn(cs)
 	q.table = table
 	q.columns = cs
