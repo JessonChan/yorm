@@ -37,8 +37,8 @@ func TestStructToTable_4(t *testing.T) {
 		Model *A `yorm:"column(a);sql(select * table where id=?)"`
 	}
 	n, cs := structToTable(B{})
-	t.Log(n, cs,len(cs))
-	for _,c:=range cs{
+	t.Log(n, cs, len(cs))
+	for _, c := range cs {
 		t.Log(*c)
 	}
 }

@@ -25,13 +25,13 @@ func Insert(i interface{}, args ...string) (int64, error) {
 }
 
 //Insert  return lastInsertId and error if has
-func insertExec(exec ExecHandler, i interface{}, args ...string) (int64, error) {
+func insertExec(exec ExecHandler, anyModel interface{}, args ...string) (int64, error) {
 
-	q, err := newTableSetter(reflect.ValueOf(i))
+	q, err := newTableSetter(reflect.ValueOf(anyModel))
 
 	var typ reflect.Type
 	if q == nil {
-		typ, q, err = newTableSetterBySlice(i)
+		typ, q, err = newTableSetterBySlice(anyModel)
 		if q == nil {
 			return 0, err
 		}
@@ -42,6 +42,7 @@ func insertExec(exec ExecHandler, i interface{}, args ...string) (int64, error) 
 
 	if len(args) == 0 {
 		columns = q.columns
+
 	} else {
 		for _, arg := range args {
 			arg = strings.ToLower(arg)
@@ -53,64 +54,76 @@ func insertExec(exec ExecHandler, i interface{}, args ...string) (int64, error) 
 		}
 	}
 
-	fs := &bytes.Buffer{}
+	fields := &bytes.Buffer{}
 	clause := &bytes.Buffer{}
 	dests := []interface{}{}
+
 	if typ != nil {
 		clause.WriteString("INSERT INTO ")
 		clause.WriteString(q.table)
 		clause.WriteString("(")
+
 		for _, c := range columns {
 			if c.isAuto {
 				continue
 			}
-			fs.WriteString(",`" + c.name + "`")
+			fields.WriteString(",`" + c.name + "`")
 		}
-		if fs.Len() == 0 {
-			return 0, errors.New("no filed to insert")
+		if fields.Len() == 0 {
+			return 0, errors.New("no row is inserted.")
 		}
-		clause.Write(fs.Bytes()[1:])
+		clause.Write(fields.Bytes()[1:]) //skip the first ","
 		clause.WriteString(")")
 		clause.WriteString("VALUES")
-		is := reflect.ValueOf(i).Elem()
-		for l := 0; l < is.Len(); l++ {
-			fs.Reset()
-			fs.WriteString("(")
+
+		model := reflect.ValueOf(anyModel).Elem()
+
+		for i := 0; i < model.Len(); i++ {
+			fields.Reset()
+			fields.WriteString("(")
+
 			for _, c := range columns {
-				v := is.Index(l).FieldByName(c.fieldName)
+				v := model.Index(i).FieldByName(c.fieldName)
 				if c.isAuto {
 					continue
 				}
+
 				vi := v.Interface()
 				switch v.Type() {
 				case StringType:
 					vi = strings.Replace(vi.(string), `'`, `\'`, -1)
 					vi = strings.Replace(vi.(string), `"`, `\"`, -1)
+
 				case TimeType:
 					vi = vi.(time.Time).Format(longSimpleTimeFormat)
 
 				case BoolType:
 					if vi.(bool) {
 						vi = 1
+
 					} else {
 						vi = 0
 					}
 				}
-				fs.WriteString(fmt.Sprintf("'%v',", vi))
+
+				fields.WriteString(fmt.Sprintf("'%v',", vi))
 			}
-			fs.Truncate(fs.Len() - 1)
-			fs.WriteString(")")
-			clause.WriteString(fs.String())
-			if l < is.Len()-1 {
+			fields.Truncate(fields.Len() - 1)
+
+			fields.WriteString(")")
+			clause.WriteString(fields.String())
+
+			if i < model.Len()-1 {
 				clause.WriteString(",")
 			}
 		}
+
 	} else {
 		clause.WriteString("INSERT INTO ")
 		clause.WriteString(q.table)
 		clause.WriteString(" SET ")
 
-		e := reflect.ValueOf(i).Elem()
+		e := reflect.ValueOf(anyModel).Elem()
 
 		for _, c := range columns {
 			v := e.FieldByName(c.fieldName)
@@ -136,19 +149,21 @@ func insertExec(exec ExecHandler, i interface{}, args ...string) (int64, error) 
 				}
 			}
 
-			fs.WriteString("," + c.name + "=?")
+			fields.WriteString("," + c.name + "=?")
 			dests = append(dests, fmt.Sprintf("%v", vi))
 		}
-		if fs.Len() == 0 {
-			return 0, errors.New("no filed to insert")
+		if fields.Len() == 0 {
+			return 0, errors.New("no row is inserted.")
 		}
-		clause.Write(fs.Bytes()[1:])
+
+		clause.Write(fields.Bytes()[1:])
 	}
 
 	r, err := exec(clause.String(), dests...)
 	if err != nil {
 		return 0, err
 	}
+
 	id, err := r.LastInsertId()
 	if id > 0 && pk.IsValid() && typ == nil {
 		pk.SetInt(id)
