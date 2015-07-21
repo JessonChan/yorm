@@ -18,9 +18,10 @@ type tableSetter struct {
 
 var (
 	//TimeType time's reflect type.
-	TimeType  = reflect.TypeOf(time.Time{})
-	BoolType  = reflect.TypeOf(true)
-	Int64Type = reflect.TypeOf(int64(0))
+	TimeType   = reflect.TypeOf(time.Time{})
+	BoolType   = reflect.TypeOf(true)
+	Int64Type  = reflect.TypeOf(int64(0))
+	StringType = reflect.TypeOf("")
 
 	// one struct reflect to a table query setter
 	tableMap = map[reflect.Value]*tableSetter{}
