@@ -13,9 +13,7 @@ type columnTag struct {
 	sql          string
 	columnName   string
 	defaultValue string
-
 }
-
 
 //parse value like column(name) ,return name
 func parseBracketsValue(toParse, key string) (value string, isSet bool) {
