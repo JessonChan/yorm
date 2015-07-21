@@ -100,7 +100,6 @@ func insertExec(exec ExecHandler, anyModel interface{}, args ...string) (int64, 
 				case BoolType:
 					if vi.(bool) {
 						vi = 1
-
 					} else {
 						vi = 0
 					}
