@@ -29,18 +29,26 @@ var (
 	tableRWLock sync.RWMutex
 )
 
-func newTableSetter(ri reflect.Value) (*tableSetter, error) {
-	if q, ok := tableMap[ri]; ok {
-		//		if t, ok := ri.Interface().(YormTableStruct); ok {
-		//			returnValue := *q
-		//			returnValue.table = t.YormTableName()
-		//			return &returnValue, nil
-		//		}
+func newTableSetter(ri reflect.Value) (rv *tableSetter, err error) {
+	var q *tableSetter
+	var ok bool
+
+	defer func() {
+		if q != nil {
+			if t, ok := ri.Interface().(YormDynamicTableStruct); ok {
+				returnValue := *q
+				returnValue.table = t.YormDynamicTableName()
+				rv = &returnValue
+			}
+		}
+	}()
+
+	if q, ok = tableMap[ri]; ok {
 		return q, nil
 	}
 	tableRWLock.Lock()
 	defer tableRWLock.Unlock()
-	if q, ok := tableMap[ri]; ok {
+	if q, ok = tableMap[ri]; ok {
 		return q, nil
 	}
 	if ri.Kind() != reflect.Ptr {
@@ -49,7 +57,7 @@ func newTableSetter(ri reflect.Value) (*tableSetter, error) {
 	if ri.IsNil() {
 		return nil, ErrNotSupported
 	}
-	q := new(tableSetter)
+	q = new(tableSetter)
 	table, cs := structToTable(reflect.Indirect(ri).Interface())
 	if len(cs) == 0 {
 		return nil, ErrNotSupported

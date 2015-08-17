@@ -27,6 +27,10 @@ type YormTableStruct interface {
 	YormTableName() string
 }
 
+type YormDynamicTableStruct interface {
+	YormDynamicTableName() string
+}
+
 func structToTable(i interface{}) (tableName string, columns []*column) {
 	typ := reflect.TypeOf(i)
 	if typ.Kind() != reflect.Struct {
