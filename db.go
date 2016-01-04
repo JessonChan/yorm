@@ -154,11 +154,11 @@ func (ex *executor) exec(clause string, args ...interface{}) (sql.Result, error)
 		log.Debug("%s", clause)
 		return ex.Exec(clause)
 	}
+	log.Debug("%s;%v", clause, args)
 	stmt, err := ex.getStmt(clause)
 	if err != nil {
 		return nil, err
 	}
-	log.Debug("%s;%v", clause, args)
 	return stmt.Exec(args...)
 }
 
