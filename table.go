@@ -46,6 +46,7 @@ func newTableSetter(ri reflect.Value) (*tableSetter, error) {
 	if ri.Kind() != reflect.Ptr {
 		return nil, ErrNonPtr
 	}
+	// todo maybe a bug here
 	if ri.IsNil() {
 		return nil, ErrNotSupported
 	}
