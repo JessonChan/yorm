@@ -4,8 +4,8 @@ yOrm is a simple,lightweight orm  , for mysql only now.
 
 ### Why this project calls yOrm ###
 
-yOrm is just a name.
-more about the detail, cc [https://github.com/lewgun]
+yOrm is just a name.  
+thanks [https://github.com/lewgun]
 
 ### What is this yOrm for? ###
 
