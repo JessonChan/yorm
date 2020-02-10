@@ -135,7 +135,7 @@ func insertExec(exec ExecHandler, anyModel interface{}, args ...string) (int64, 
 			switch v.Type() {
 
 			case TimeType:
-				//zero time ,skip insert
+				// zero time ,skip insert
 				if vi.(time.Time).IsZero() {
 					continue
 				}
@@ -149,7 +149,7 @@ func insertExec(exec ExecHandler, anyModel interface{}, args ...string) (int64, 
 				}
 			}
 
-			fields.WriteString("," + c.name + "=?")
+			fields.WriteString(",`" + c.name + "`=?")
 			dests = append(dests, fmt.Sprintf("%v", vi))
 		}
 		if fields.Len() == 0 {
