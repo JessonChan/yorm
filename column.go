@@ -33,6 +33,7 @@ func structToTable(i interface{}) (tableName string, columns []*column) {
 		return
 	}
 	if yt, ok := i.(YormTableStruct); ok {
+		// todo YormTableName should tableFunc too
 		tableName = yt.YormTableName()
 	} else {
 		tableName = camelToUnderscore(typ.Name())
