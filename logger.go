@@ -25,10 +25,10 @@ type yormLogger struct {
 	innerLogger *log.Logger
 }
 
-var logger = &yormLogger{innerLogger: log.New(os.Stderr, "", log.Lshortfile|log.LstdFlags)}
+var yLogger = &yormLogger{innerLogger: log.New(os.Stderr, "", log.Lshortfile|log.LstdFlags)}
 
 func InitLogger(l *log.Logger) {
-	logger.innerLogger = l
+	yLogger.innerLogger = l
 }
 
 func SetLoggerLevel(s string) {
@@ -48,7 +48,7 @@ func writeMsg(lv string, s string, f ...interface{}) {
 	if len(f) > 0 {
 		msg = fmt.Sprintf(s, f...)
 	}
-	logger.innerLogger.Printf("[%s] %s\n", lv, msg)
+	yLogger.innerLogger.Printf("[%s] %s\n", lv, msg)
 }
 
 func (y *yormLogger) Debug(s string, f ...interface{}) {

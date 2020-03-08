@@ -188,7 +188,7 @@ func (ex *tranExecutor) query(i interface{}, query string, args ...interface{}) 
 		query = strings.Replace(query, "*", buildFullColumnSql(q), -1)
 	}
 
-	log.Debug("%s;%v", query, args)
+	yLogger.Debug("%s;%v", query, args)
 	if typ.Kind() == reflect.Slice {
 		rows, err := ex.Query(query, args...)
 		if rows == nil {
@@ -219,7 +219,7 @@ func (ex *executor) query(i interface{}, query string, args ...interface{}) erro
 
 	var err error
 	var stmt *sql.Stmt
-	log.Debug("%s;%v", query, args)
+	yLogger.Debug("%s;%v", query, args)
 	stmt, err = ex.getStmt(query)
 	if stmt == nil {
 		return err
