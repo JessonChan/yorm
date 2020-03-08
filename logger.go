@@ -2,15 +2,9 @@ package yorm
 
 import (
 	"fmt"
+	"log"
+	"os"
 )
-
-type Logger interface {
-	Debug(string, ...interface{})
-	Warn(string, ...interface{})
-	Error(string, ...interface{})
-}
-
-var log Logger = &yormLogger{}
 
 var (
 	Close = ""
@@ -28,10 +22,13 @@ var lmap = map[string]int{
 	Error: 14}
 
 type yormLogger struct {
+	innerLogger *log.Logger
 }
 
-func InitLogger(l Logger) {
-	log = l
+var logger = &yormLogger{innerLogger: log.New(os.Stderr, "", log.Lshortfile|log.LstdFlags)}
+
+func InitLogger(l *log.Logger) {
+	logger.innerLogger = l
 }
 
 func SetLoggerLevel(s string) {
@@ -51,7 +48,7 @@ func writeMsg(lv string, s string, f ...interface{}) {
 	if len(f) > 0 {
 		msg = fmt.Sprintf(s, f...)
 	}
-	fmt.Printf("[%s] %s\n", lv, msg)
+	logger.innerLogger.Printf("[%s] %s\n", lv, msg)
 }
 
 func (y *yormLogger) Debug(s string, f ...interface{}) {
