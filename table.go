@@ -24,13 +24,13 @@ var (
 	StringType = reflect.TypeOf("")
 
 	// one struct reflect to a table query setter
-	tableMap = map[reflect.Value]*tableSetter{}
+	tableMap = map[reflect.Type]*tableSetter{}
 	//table lock
 	tableRWLock sync.RWMutex
 )
 
 func newTableSetter(ri reflect.Value) (*tableSetter, error) {
-	if q, ok := tableMap[ri]; ok {
+	if q, ok := tableMap[ri.Type()]; ok {
 		//		if t, ok := ri.Interface().(YormTableStruct); ok {
 		//			returnValue := *q
 		//			returnValue.table = t.YormTableName()
@@ -40,7 +40,7 @@ func newTableSetter(ri reflect.Value) (*tableSetter, error) {
 	}
 	tableRWLock.Lock()
 	defer tableRWLock.Unlock()
-	if q, ok := tableMap[ri]; ok {
+	if q, ok := tableMap[ri.Type()]; ok {
 		return q, nil
 	}
 	if ri.Kind() != reflect.Ptr {
@@ -62,7 +62,7 @@ func newTableSetter(ri reflect.Value) (*tableSetter, error) {
 	for k, v := range cs {
 		q.dests[k] = newPtrInterface(v.typ)
 	}
-	tableMap[ri] = q
+	tableMap[ri.Type()] = q
 	return q, nil
 }
 
